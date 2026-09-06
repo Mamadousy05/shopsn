@@ -7,6 +7,14 @@ const path = require('path');
 
 const DB_FILE = path.join(__dirname, 'data', 'catalog.json');
 
+// Le dossier "data" n'est pas envoyé sur GitHub (il est dans .gitignore),
+// donc il n'existe pas forcément sur un serveur fraîchement déployé.
+// On le crée nous-mêmes au besoin, pour éviter une erreur au premier lancement.
+function ensureDataDir() {
+  const dir = path.dirname(DB_FILE);
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+}
+
 const SEED = {
   categories: [
     { id: 'mode', name: 'Mode & Vêtements', icon: '👗' },
@@ -34,6 +42,7 @@ const SEED = {
 };
 
 function readCatalog() {
+  ensureDataDir();
   if (!fs.existsSync(DB_FILE)) {
     fs.writeFileSync(DB_FILE, JSON.stringify(SEED, null, 2), 'utf-8');
   }
@@ -45,6 +54,7 @@ function readCatalog() {
 }
 
 function writeCatalog(catalog) {
+  ensureDataDir();
   fs.writeFileSync(DB_FILE, JSON.stringify(catalog, null, 2), 'utf-8');
 }
 

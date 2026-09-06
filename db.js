@@ -8,7 +8,13 @@ const path = require('path');
 
 const DB_FILE = path.join(__dirname, 'data', 'orders.json');
 
+function ensureDataDir() {
+  const dir = path.dirname(DB_FILE);
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+}
+
 function readAll() {
+  ensureDataDir();
   if (!fs.existsSync(DB_FILE)) {
     fs.writeFileSync(DB_FILE, '[]', 'utf-8');
   }
@@ -21,6 +27,7 @@ function readAll() {
 }
 
 function writeAll(orders) {
+  ensureDataDir();
   fs.writeFileSync(DB_FILE, JSON.stringify(orders, null, 2), 'utf-8');
 }
 
