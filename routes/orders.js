@@ -118,6 +118,26 @@ router.get('/mine', (req, res) => {
   res.json({ orders, statusSteps: STATUS_STEPS });
 });
 
+// Le client peut annuler SA commande, en reconfirmant son numéro de
+// téléphone (pour éviter qu'il annule la commande d'un autre client en
+// devinant une référence). Uniquement possible tant qu'elle n'est pas
+// encore payée — au-delà, le client doit contacter le vendeur directement.
+router.delete('/:id', (req, res) => {
+  const order = db.getOrder(req.params.id);
+  if (!order) return res.status(404).json({ error: 'Commande introuvable.' });
+
+  const phone = (req.query.phone || req.body?.phone || '').replace(/\D/g, '');
+  const orderPhone = (order.phone || '').replace(/\D/g, '');
+  if (!phone || !orderPhone.endsWith(phone.slice(-8))) {
+    return res.status(403).json({ error: 'Numéro de téléphone incorrect pour cette commande.' });
+  }
+  if (order.paid) {
+    return res.status(400).json({ error: 'Cette commande est déjà payée, contactez le vendeur pour l\'annuler.' });
+  }
+  db.deleteOrder(order.id);
+  res.json({ ok: true });
+});
+
 // Récupère une commande précise (utilisé par le frontend pour
 // afficher le suivi et vérifier si le paiement est confirmé).
 router.get('/:id', (req, res) => {

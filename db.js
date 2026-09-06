@@ -55,4 +55,13 @@ function updateOrder(id, patch) {
   return orders[idx];
 }
 
-module.exports = { createOrder, getOrder, listOrders, updateOrder };
+function deleteOrder(id) {
+  const orders = readAll();
+  const idx = orders.findIndex(o => o.id === id);
+  if (idx === -1) return false;
+  orders.splice(idx, 1);
+  writeAll(orders);
+  return true;
+}
+
+module.exports = { createOrder, getOrder, listOrders, updateOrder, deleteOrder };

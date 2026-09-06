@@ -29,8 +29,7 @@
   }
   *{box-sizing:border-box;}
   html{scroll-behavior:smooth;}
-  html{overflow-x:hidden;}
-  body{margin:0;background:var(--bg);color:var(--ink);font-family:'Work Sans', sans-serif;font-size:15px;line-height:1.5;overflow-x:hidden;max-width:100vw;}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:'Work Sans', sans-serif;font-size:15px;line-height:1.5;max-width:100vw;}
   h1,h2,h3,h4{font-family:'Fraunces', serif;font-weight:600;margin:0;color:var(--navy);}
   a{color:inherit;text-decoration:none;}
   button{font-family:inherit;cursor:pointer;}
@@ -69,7 +68,9 @@
   .hero p.lede{color:var(--ink-soft);font-size:16px;margin-top:14px;max-width:440px;}
   .hero-cta{margin-top:22px;display:inline-flex;align-items:center;gap:10px;background:var(--terracotta);color:#fff;padding:13px 26px;border-radius:6px;font-weight:700;font-size:15px;border:0;}
   .hero-gallery{display:grid;grid-template-columns:1.15fr 1fr;grid-template-rows:1fr 1fr;gap:14px;height:280px;}
-  .hero-tile{border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:46px;box-shadow:0 16px 30px -18px rgba(20,33,61,0.35);}
+  .hero-tile{border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:46px;box-shadow:0 16px 30px -18px rgba(20,33,61,0.35);overflow:hidden;position:relative;}
+  .hero-tile img{width:100%;height:100%;object-fit:cover;}
+  .hero-tile .hero-tile-label{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(to top,rgba(0,0,0,0.55),transparent);color:#fff;font-size:12px;font-weight:600;padding:16px 10px 8px;text-align:left;}
   .hero-tile.t1{grid-row:1 / 3;background:linear-gradient(135deg,var(--gold),var(--gold-dark));}
   .hero-tile.t2{background:linear-gradient(135deg,var(--teal),#0f5757);}
   .hero-tile.t3{background:linear-gradient(135deg,var(--pink),#8f2a44);}
@@ -386,9 +387,9 @@
           <button class="hero-cta" onclick="document.getElementById('products-section').scrollIntoView()">Voir les produits</button>
         </div>
         <div class="hero-gallery">
-          <div class="hero-tile t1"></div>
-          <div class="hero-tile t2"></div>
-          <div class="hero-tile t3"></div>
+          <div class="hero-tile t1" id="heroTile1"></div>
+          <div class="hero-tile t2" id="heroTile2"></div>
+          <div class="hero-tile t3" id="heroTile3"></div>
         </div>
       </div>
     </section>
@@ -401,27 +402,6 @@
         <div class="trust-item">Vendeurs locaux vérifiés</div>
       </div>
     </div>
-
-    <section class="section">
-      <div class="section-head"><h2>Comment ça marche</h2></div>
-      <div class="steps-grid">
-        <div class="step-card">
-          <div class="step-num">01</div>
-          <h3>Choisissez vos produits</h3>
-          <p>Parcourez les catégories ou utilisez la recherche pour trouver ce qu'il vous faut, puis ajoutez au panier.</p>
-        </div>
-        <div class="step-card">
-          <div class="step-num">02</div>
-          <h3>Payez en toute sécurité</h3>
-          <p>Réglez directement avec Wave, Orange Money, votre carte bancaire, ou à la livraison.</p>
-        </div>
-        <div class="step-card">
-          <div class="step-num">03</div>
-          <h3>Suivez votre livraison</h3>
-          <p>Recevez votre commande à l'adresse indiquée et suivez chaque étape depuis "Mes commandes".</p>
-        </div>
-      </div>
-    </section>
 
     <section class="section" id="products-section">
       <div class="section-head">
@@ -1158,8 +1138,22 @@ function renderMyOrdersList(list){
         ${o.items.map(it => `${it.name} × ${it.qty} — ${formatPrice(it.price*it.qty)}`).join('<br>')}
         <div style="margin-top:8px;font-weight:700;color:var(--ink);">Total : ${formatPrice(o.total)} · Paiement : ${o.payment}</div>
       </div>
+      ${!o.paid ? `<button class="btn btn-danger" style="margin-top:14px;" onclick="cancelMyOrder('${o.id}')">Annuler cette commande</button>` : ''}
     </div>
   `).join('');
+}
+async function cancelMyOrder(orderId){
+  if(!confirm('Es-tu sûr(e) de vouloir annuler cette commande ?')) return;
+  const phone = document.getElementById('myPhoneInput').value.trim();
+  try{
+    const res = await fetch('/api/orders/'+orderId+'?phone='+encodeURIComponent(phone), { method:'DELETE' });
+    const data = await res.json();
+    if(!res.ok){ showToast(data.error || 'Erreur lors de l\'annulation'); return; }
+    showToast('Commande annulée');
+    lookupMyOrders();
+  }catch(err){
+    showToast('Impossible de contacter le serveur');
+  }
 }
 
 /* =====================================================
@@ -1516,6 +1510,23 @@ async function fetchCatalog(){
     products = []; categories = [];
     showToast('Impossible de charger le catalogue. Le serveur est-il démarré ?');
   }
+  renderHeroTiles();
+}
+function renderHeroTiles(){
+  // Affiche jusqu'à 3 vraies photos de produits dans le héros. S'il y a
+  // moins de 3 produits avec une photo, les tuiles restantes gardent
+  // leur simple aplat de couleur (défini en CSS).
+  const withImage = products.filter(p => p.image);
+  ['heroTile1','heroTile2','heroTile3'].forEach((id, i) => {
+    const tile = document.getElementById(id);
+    if(!tile) return;
+    const p = withImage[i];
+    if(p){
+      tile.innerHTML = `<img src="${p.image}" alt="${p.name}"><span class="hero-tile-label">${p.name}</span>`;
+      tile.style.cursor = 'pointer';
+      tile.onclick = () => openDetail(p.id);
+    }
+  });
 }
 async function init(){
   await fetchCatalog();
