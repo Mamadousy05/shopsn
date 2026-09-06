@@ -686,6 +686,16 @@
   </div>
 </div>
 
+<div class="modal-overlay" id="orderWhatsAppModal">
+  <div class="modal-box" style="max-width:440px;">
+    <h3>Commande enregistrée</h3>
+    <p class="sub">Envoie le récapitulatif au vendeur par WhatsApp pour qu'il la traite au plus vite.</p>
+    <div id="orderWhatsAppSummary" style="background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:14px;margin-bottom:16px;font-size:12.5px;white-space:pre-line;max-height:240px;overflow-y:auto;line-height:1.6;"></div>
+    <button class="btn btn-dark" style="width:100%;margin-bottom:10px;" onclick="sendOrderToWhatsAppFromModal()">Envoyer via WhatsApp</button>
+    <button class="btn btn-outline" style="width:100%;" onclick="continueAfterOrderConfirmation()">Continuer</button>
+  </div>
+</div>
+
 <div class="modal-overlay" id="manualPaymentModal">
   <div class="modal-box" style="max-width:440px;">
     <h3 id="manualPaymentTitle">Paiement</h3>
@@ -979,6 +989,46 @@ function renderCheckoutSummary(){
     <div class="summary-row total"><span>Total</span><span>${formatPrice(subtotal+livraison)}</span></div>
   `;
 }
+let pendingOrder = null; // commande en attente de confirmation WhatsApp / paiement
+
+function buildWhatsAppMessage(order){
+  const now = new Date(order.createdAt);
+  const dateStr = now.toLocaleDateString('fr-FR') + ' à ' + now.toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'});
+  const subtotal = order.items.reduce((s,it)=>s+it.price*it.qty, 0);
+  const livraison = order.total - subtotal;
+  const lignesProduits = order.items.map(it => `• ${it.name} × ${it.qty} — ${formatPrice(it.price*it.qty)}`).join('\n');
+  return `🛒 NOUVELLE COMMANDE\n`
+    + `👤 Client : ${order.name}\n`
+    + `📞 Téléphone : ${order.phone}\n`
+    + `📍 Livraison : ${order.address}\n\n`
+    + `📦 PRODUITS :\n${lignesProduits}\n\n`
+    + `💰 Sous-total : ${formatPrice(subtotal)}\n`
+    + `🚚 Livraison : ${formatPrice(livraison)}\n`
+    + `💵 TOTAL : ${formatPrice(order.total)}\n`
+    + `💳 Paiement : ${order.payment}\n`
+    + `📅 ${dateStr}\n`
+    + `🆔 Commande : #${order.id.slice(0,8)}\n\n`
+    + `Merci de traiter cette commande.`;
+}
+
+async function sendOrderToWhatsApp(order){
+  let info = { whatsappNumber: null };
+  try{
+    const res = await fetch('/api/orders/payment-info');
+    info = await res.json();
+  }catch(err){}
+  if(!info.whatsappNumber){
+    showToast('Le vendeur n\'a pas encore configuré son numéro WhatsApp.');
+    return;
+  }
+  const message = buildWhatsAppMessage(order);
+  const number = info.whatsappNumber.replace(/\D/g, ''); // wa.me exige des chiffres uniquement
+  window.open('https://wa.me/' + number + '?text=' + encodeURIComponent(message), '_blank');
+}
+function sendOrderToWhatsAppFromModal(){
+  if(pendingOrder) sendOrderToWhatsApp(pendingOrder);
+}
+
 async function placeOrder(){
   const lines = cartLines();
   if(lines.length===0){ showToast('Votre panier est vide'); return; }
@@ -1010,56 +1060,54 @@ async function placeOrder(){
     });
     const orderData = await orderRes.json();
     if(!orderRes.ok){ showToast(orderData.error || 'Erreur lors de la création de la commande'); resetConfirmBtn(confirmBtn); return; }
-    const orderId = orderData.order.id;
+    const order = orderData.order;
 
-    // 2. Selon le mode de paiement choisi, on redirige vers Wave / Orange Money,
-    //    ou on confirme directement (paiement à la livraison).
-    if(payment === 'Wave'){
-      confirmBtn.textContent = 'Vérification…';
-      const waveRes = await fetch('/api/wave/checkout', {
-        method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({orderId})
-      });
-      const waveData = await waveRes.json();
-      lines.forEach(l => { l.product.stock -= l.qty; });
-      cart = []; updateCartCount();
-      if(!waveRes.ok){
-        // Pas encore de clé API Wave configurée : on bascule sur le paiement manuel.
-        await showManualPayment('Wave', orderId, total);
-        resetConfirmBtn(confirmBtn);
-        return;
-      }
-      window.location.href = waveData.launchUrl;
-      return;
-    }
-
-    if(payment === 'Orange Money'){
-      confirmBtn.textContent = 'Vérification…';
-      const omRes = await fetch('/api/orange/checkout', {
-        method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({orderId})
-      });
-      const omData = await omRes.json();
-      lines.forEach(l => { l.product.stock -= l.qty; });
-      cart = []; updateCartCount();
-      if(!omRes.ok){
-        // Pas encore de compte marchand Orange Money : on bascule sur le paiement manuel.
-        await showManualPayment('Orange Money', orderId, total);
-        resetConfirmBtn(confirmBtn);
-        return;
-      }
-      window.location.href = omData.paymentUrl;
-      return;
-    }
-
-    // Carte bancaire et paiement à la livraison : pas de redirection en ligne pour l'instant.
+    // La commande est déjà enregistrée côté serveur : on peut vider le
+    // panier et mettre à jour le stock affiché tout de suite.
     lines.forEach(l => { l.product.stock -= l.qty; });
     cart = []; updateCartCount();
-    showToast('Commande confirmée !');
-    showPage('orders');
+
+    // 2. On affiche un récapitulatif avec un bouton d'envoi WhatsApp avant
+    //    de poursuivre vers le paiement (Wave/Orange) ou la confirmation finale.
+    pendingOrder = order;
+    document.getElementById('orderWhatsAppSummary').textContent = buildWhatsAppMessage(order);
+    openModal('orderWhatsAppModal');
+    resetConfirmBtn(confirmBtn);
   }catch(err){
     console.error(err);
     showToast('Impossible de contacter le serveur. Vérifiez que le backend est démarré.');
     resetConfirmBtn(confirmBtn);
   }
+}
+
+async function continueAfterOrderConfirmation(){
+  closeModal('orderWhatsAppModal');
+  const order = pendingOrder;
+  if(!order){ showPage('orders'); return; }
+
+  if(order.payment === 'Wave'){
+    const waveRes = await fetch('/api/wave/checkout', {
+      method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({orderId: order.id})
+    });
+    const waveData = await waveRes.json();
+    if(!waveRes.ok){ await showManualPayment('Wave', order.id, order.total); return; }
+    window.location.href = waveData.launchUrl;
+    return;
+  }
+
+  if(order.payment === 'Orange Money'){
+    const omRes = await fetch('/api/orange/checkout', {
+      method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({orderId: order.id})
+    });
+    const omData = await omRes.json();
+    if(!omRes.ok){ await showManualPayment('Orange Money', order.id, order.total); return; }
+    window.location.href = omData.paymentUrl;
+    return;
+  }
+
+  // Carte bancaire et paiement à la livraison : pas de redirection en ligne pour l'instant.
+  showToast('Commande confirmée !');
+  showPage('orders');
 }
 function resetConfirmBtn(btn){
   btn.disabled = false;

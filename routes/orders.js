@@ -71,6 +71,7 @@ router.get('/payment-info', (req, res) => {
     sellerName: process.env.SELLER_NAME || 'Le vendeur',
     waveNumber: process.env.SELLER_WAVE_NUMBER || null,
     orangeNumber: process.env.SELLER_ORANGE_NUMBER || null,
+    whatsappNumber: process.env.SELLER_WHATSAPP_NUMBER || null,
   });
 });
 
