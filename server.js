@@ -7,6 +7,7 @@ const waveRouter = require('./routes/wave');
 const orangeRouter = require('./routes/orange');
 const adminRouter = require('./routes/admin');
 const catalogRouter = require('./routes/catalog');
+const whatsappWebhookRouter = require('./routes/whatsapp-webhook');
 
 const app = express();
 
@@ -26,6 +27,7 @@ app.use('/api/wave', waveRouter);
 app.use('/api/orange', orangeRouter);
 app.use('/api/admin', adminRouter);
 app.use('/api/catalog', catalogRouter);
+app.use('/webhook/whatsapp', whatsappWebhookRouter);
 
 // Sert le site (shopsn.html, success.html, cancel.html, etc.)
 app.use(express.static(path.join(__dirname, 'public')));

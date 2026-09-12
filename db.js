@@ -64,4 +64,10 @@ function deleteOrder(id) {
   return true;
 }
 
-module.exports = { createOrder, getOrder, listOrders, updateOrder, deleteOrder };
+// Utilisé par le webhook WhatsApp pour retrouver quelle commande correspond
+// à un accusé de réception (sent/delivered/read/failed).
+function findOrderByWhatsAppMessageId(messageId) {
+  return readAll().find(o => o.whatsappMessageId === messageId) || null;
+}
+
+module.exports = { createOrder, getOrder, listOrders, updateOrder, deleteOrder, findOrderByWhatsAppMessageId };

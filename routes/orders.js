@@ -2,7 +2,7 @@ const express = require('express');
 const crypto = require('crypto');
 const db = require('../db');
 const catalogDb = require('../catalogDb');
-const { notifySellerWhatsApp } = require('../notify');
+const { notifySellerWhatsApp, sendWhatsAppOrderNotification } = require('../notify');
 const { requireAdmin } = require('./admin');
 
 const router = express.Router();
@@ -40,8 +40,12 @@ router.post('/', (req, res) => {
     status: 0, // 0 = Commande passée / en attente de paiement
     paid: payment === 'Paiement à la livraison', // pas de paiement en ligne pour ce mode
     createdAt: new Date().toISOString(),
+    whatsappStatus: 'pending', // pending | sent | delivered | read | failed
+    whatsappMessageId: null,
   };
 
+  // La commande est enregistrée AVANT toute tentative d'envoi WhatsApp —
+  // si WhatsApp échoue, la commande reste valide.
   db.createOrder(order);
 
   // Décrémente le stock côté serveur pour que ça survive à un redémarrage
@@ -55,13 +59,38 @@ router.post('/', (req, res) => {
   });
   if (changed) catalogDb.writeCatalog(catalog);
 
-  // Notification WhatsApp au vendeur (best-effort, ne bloque jamais la réponse).
+  // Ancien système (Green API / CallMeBot), gardé comme filet de sécurité.
   const itemsList = items.map(it => `${it.name} x${it.qty}`).join(', ');
   notifySellerWhatsApp(
     `🛍️ Nouvelle commande SHOPSN\nClient : ${order.name} (${order.phone})\nArticles : ${itemsList}\nTotal : ${order.total} FCFA\nPaiement : ${order.payment}\nRéférence : #${order.id.slice(0, 8)}`
   );
 
+  // Nouveau système officiel (WhatsApp Cloud API). Best-effort : ne bloque
+  // jamais la réponse envoyée au client, la commande est déjà enregistrée.
+  sendWhatsAppOrderNotification(order).then(result => {
+    if (result.ok) {
+      db.updateOrder(order.id, { whatsappStatus: 'sent', whatsappMessageId: result.messageId });
+    } else {
+      db.updateOrder(order.id, { whatsappStatus: 'failed' });
+    }
+  });
+
   res.json({ order });
+});
+
+// Renvoi manuel de la notification WhatsApp depuis l'admin (par exemple si
+// le premier envoi a échoué). Contrairement à l'envoi automatique à la
+// création, celui-ci est toujours autorisé, quel que soit le statut actuel.
+router.post('/:id/resend-whatsapp', requireAdmin, async (req, res) => {
+  const order = db.getOrder(req.params.id);
+  if (!order) return res.status(404).json({ error: 'Commande introuvable.' });
+  const result = await sendWhatsAppOrderNotification(order);
+  const updated = db.updateOrder(order.id, {
+    whatsappStatus: result.ok ? 'sent' : 'failed',
+    whatsappMessageId: result.ok ? result.messageId : order.whatsappMessageId,
+  });
+  if (!result.ok) return res.status(502).json({ error: result.error, order: updated });
+  res.json({ order: updated });
 });
 
 // Infos du vendeur pour le paiement manuel (numéros Wave/Orange Money
