@@ -92,8 +92,10 @@
   .card-body{padding:12px;display:flex;flex-direction:column;gap:4px;flex:1;}
   .card-name{font-size:14px;font-weight:600;color:var(--ink);line-height:1.3;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .card-price-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:auto;padding-top:6px;}
-  .card-price{font-family:'Fraunces',serif;font-size:17px;font-weight:600;color:var(--navy);}
-  .card-price-row .btn{padding:7px 14px;font-size:12.5px;flex-shrink:0;}
+  .card-add-btn{margin-top:8px;width:100%;display:flex;align-items:center;justify-content:center;gap:7px;}
+  .card-add-btn svg{width:16px;height:16px;flex-shrink:0;}
+  .card-price{font-family:'Fraunces',serif;font-size:17px;font-weight:600;color:var(--navy);margin-top:auto;padding-top:6px;}
+  .card-add-btn{padding:8px 14px;font-size:12.5px;}
   .btn{border:0;border-radius:6px;padding:9px 12px;font-size:13px;font-weight:600;}
   .btn-dark{background:var(--navy);color:#fff;flex:1;}
   .btn-outline{background:transparent;border:1px solid var(--line);color:var(--navy);}
@@ -349,7 +351,7 @@
     .card-body{padding:10px 10px 12px;gap:4px;}
     .card-name{font-size:13px;}
     .card-price{font-size:15px;}
-    .card-price-row .btn{padding:6px 10px;font-size:11.5px;}
+    .card-add-btn{padding:7px 10px;font-size:11px;}
   }
 </style>
 </head>
@@ -837,10 +839,11 @@ function renderProductCard(p){
       </div>
       <div class="card-body">
         <span class="card-name">${p.name}</span>
-        <div class="card-price-row">
-          <span class="card-price">${formatPrice(p.price)}</span>
-          <button class="btn btn-dark" ${p.stock===0?'disabled':''} onclick="event.stopPropagation();addToCart(${p.id},1)">${p.stock===0?'Rupture':'Ajouter'}</button>
-        </div>
+        <span class="card-price">${formatPrice(p.price)}</span>
+        <button class="btn btn-dark card-add-btn" ${p.stock===0?'disabled':''} onclick="event.stopPropagation();addToCart(${p.id},1)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.5 3h2l2.4 12.2a2 2 0 0 0 2 1.6h8.6a2 2 0 0 0 2-1.6L21 7H6"/></svg>
+          ${p.stock===0?'Rupture':'Ajouter'}
+        </button>
       </div>
     </div>`;
 }
