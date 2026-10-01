@@ -7,6 +7,15 @@ const { requireAdmin } = require('./admin');
 
 const router = express.Router();
 
+const DELIVERY_FEE = 1500;
+const COD_LABEL = 'Paiement à la livraison';
+const PAYMENT_METHODS = ['Wave', 'Orange Money', COD_LABEL];
+
+function isCancellable(order) {
+  if (order.payment === COD_LABEL) return order.status === 0;
+  return !order.paid;
+}
+
 const STATUS_STEPS = [
   'Commande passée',
   'Paiement confirmé',
@@ -20,27 +29,50 @@ const STATUS_STEPS = [
 // Le frontend appelle cette route juste avant de rediriger
 // le client vers Wave ou Orange Money.
 router.post('/', (req, res) => {
-  const { items, total, address, phone, name, payment } = req.body || {};
+  const { items, address, phone, name, payment } = req.body || {};
 
   if (!items || !Array.isArray(items) || items.length === 0) {
     return res.status(400).json({ error: 'La commande ne contient aucun article.' });
   }
-  if (!total || total <= 0) {
-    return res.status(400).json({ error: 'Montant de commande invalide.' });
+  const cleanName = String(name || '').trim();
+  const cleanPhone = String(phone || '').trim();
+  const cleanAddress = String(address || '').trim();
+  if (!cleanName || !cleanAddress || cleanPhone.replace(/\D/g, '').length < 9) {
+    return res.status(400).json({ error: 'Merci d\'indiquer un nom, une adresse et un numéro de téléphone valide.' });
   }
+  if (!PAYMENT_METHODS.includes(payment)) {
+    return res.status(400).json({ error: 'Mode de paiement invalide.' });
+  }
+
+  // Les prix et le total sont recalculés ici à partir du catalogue : on ne
+  // fait jamais confiance aux montants envoyés par le navigateur (un client
+  // malin pourrait sinon modifier le prix avant d'envoyer sa commande).
+  const catalog = catalogDb.readCatalog();
+  const orderItems = [];
+  for (const item of items) {
+    const product = catalog.products.find(p => p.id === Number(item.id));
+    const qty = Math.floor(Number(item.qty));
+    if (!product) return res.status(400).json({ error: 'Un produit de votre panier n\'existe plus. Merci de rafraîchir la page.' });
+    if (!qty || qty < 1) return res.status(400).json({ error: 'Quantité invalide.' });
+    if (qty > product.stock) {
+      return res.status(400).json({ error: `Stock insuffisant pour "${product.name}" (il en reste ${product.stock}).` });
+    }
+    orderItems.push({ id: product.id, name: product.name, qty, price: product.price });
+  }
+  const total = orderItems.reduce((s, it) => s + it.price * it.qty, 0) + DELIVERY_FEE;
 
   const order = {
     id: crypto.randomUUID(),
-    name: name || '',
-    phone: phone || '',
-    address: address || '',
-    items,
+    name: cleanName,
+    phone: cleanPhone,
+    address: cleanAddress,
+    items: orderItems,
     total,
-    payment: payment || 'Non spécifié',
+    payment,
     status: 0, // 0 = Commande passée / en attente de paiement
-    paid: payment === 'Paiement à la livraison', // pas de paiement en ligne pour ce mode
+    paid: payment === COD_LABEL, // pas de paiement en ligne pour ce mode
     createdAt: new Date().toISOString(),
-    whatsappStatus: 'pending', // pending | sent | delivered | read | failed
+    whatsappStatus: 'pending', // pending | sent | delivered | read | failed | not_configured
     whatsappMessageId: null,
   };
 
@@ -48,19 +80,15 @@ router.post('/', (req, res) => {
   // si WhatsApp échoue, la commande reste valide.
   db.createOrder(order);
 
-  // Décrémente le stock côté serveur pour que ça survive à un redémarrage
-  // (les articles doivent inclure un "id" de produit pour être décomptés).
-  const catalog = catalogDb.readCatalog();
-  let changed = false;
-  items.forEach(item => {
-    if (item.id === undefined) return;
+  // Décrémente le stock côté serveur pour que ça survive à un redémarrage.
+  orderItems.forEach(item => {
     const product = catalog.products.find(p => p.id === item.id);
-    if (product) { product.stock = Math.max(0, product.stock - item.qty); changed = true; }
+    product.stock = Math.max(0, product.stock - item.qty);
   });
-  if (changed) catalogDb.writeCatalog(catalog);
+  catalogDb.writeCatalog(catalog);
 
   // Ancien système (Green API / CallMeBot), gardé comme filet de sécurité.
-  const itemsList = items.map(it => `${it.name} x${it.qty}`).join(', ');
+  const itemsList = orderItems.map(it => `${it.name} x${it.qty}`).join(', ');
   notifySellerWhatsApp(
     `🛍️ Nouvelle commande SHOPSN\nClient : ${order.name} (${order.phone})\nArticles : ${itemsList}\nTotal : ${order.total} FCFA\nPaiement : ${order.payment}\nRéférence : #${order.id.slice(0, 8)}`
   );
@@ -71,7 +99,7 @@ router.post('/', (req, res) => {
     if (result.ok) {
       db.updateOrder(order.id, { whatsappStatus: 'sent', whatsappMessageId: result.messageId });
     } else {
-      db.updateOrder(order.id, { whatsappStatus: 'failed' });
+      db.updateOrder(order.id, { whatsappStatus: result.notConfigured ? 'not_configured' : 'failed' });
     }
   });
 
@@ -86,7 +114,7 @@ router.post('/:id/resend-whatsapp', requireAdmin, async (req, res) => {
   if (!order) return res.status(404).json({ error: 'Commande introuvable.' });
   const result = await sendWhatsAppOrderNotification(order);
   const updated = db.updateOrder(order.id, {
-    whatsappStatus: result.ok ? 'sent' : 'failed',
+    whatsappStatus: result.ok ? 'sent' : (result.notConfigured ? 'not_configured' : 'failed'),
     whatsappMessageId: result.ok ? result.messageId : order.whatsappMessageId,
   });
   if (!result.ok) return res.status(502).json({ error: result.error, order: updated });
@@ -101,6 +129,7 @@ router.get('/payment-info', (req, res) => {
     waveNumber: process.env.SELLER_WAVE_NUMBER || null,
     orangeNumber: process.env.SELLER_ORANGE_NUMBER || null,
     whatsappNumber: process.env.SELLER_WHATSAPP_NUMBER || null,
+    deliveryFee: DELIVERY_FEE,
   });
 });
 
@@ -145,13 +174,14 @@ router.get('/mine', (req, res) => {
     return res.status(400).json({ error: 'Merci d\'indiquer un numéro de téléphone valide.' });
   }
   const orders = db.listOrders().filter(o => (o.phone || '').replace(/\D/g, '').endsWith(phone.slice(-8)));
-  res.json({ orders, statusSteps: STATUS_STEPS });
+  res.json({ orders: orders.map(o => ({ ...o, cancellable: isCancellable(o) })), statusSteps: STATUS_STEPS });
 });
 
 // Le client peut annuler SA commande, en reconfirmant son numéro de
 // téléphone (pour éviter qu'il annule la commande d'un autre client en
 // devinant une référence). Uniquement possible tant qu'elle n'est pas
-// encore payée — au-delà, le client doit contacter le vendeur directement.
+// encore payée (ou, pour le paiement à la livraison, tant qu'elle n'est
+// pas encore en préparation) — au-delà, le client doit contacter le vendeur.
 router.delete('/:id', (req, res) => {
   const order = db.getOrder(req.params.id);
   if (!order) return res.status(404).json({ error: 'Commande introuvable.' });
@@ -161,10 +191,18 @@ router.delete('/:id', (req, res) => {
   if (!phone || !orderPhone.endsWith(phone.slice(-8))) {
     return res.status(403).json({ error: 'Numéro de téléphone incorrect pour cette commande.' });
   }
-  if (order.paid) {
-    return res.status(400).json({ error: 'Cette commande est déjà payée, contactez le vendeur pour l\'annuler.' });
+  if (!isCancellable(order)) {
+    return res.status(400).json({ error: 'Cette commande est déjà payée ou en préparation, contactez le vendeur pour l\'annuler.' });
   }
   db.deleteOrder(order.id);
+
+  // Les articles de la commande annulée sont remis en stock.
+  const catalog = catalogDb.readCatalog();
+  order.items.forEach(item => {
+    const product = catalog.products.find(p => p.id === item.id);
+    if (product) product.stock += item.qty;
+  });
+  catalogDb.writeCatalog(catalog);
   res.json({ ok: true });
 });
 

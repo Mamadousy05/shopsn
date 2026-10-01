@@ -91,11 +91,9 @@
   .card-visual .cat-tag{position:absolute;top:8px;right:8px;background:rgba(255,255,255,0.9);color:var(--navy);font-size:10px;font-weight:700;padding:3px 9px;border-radius:99px;}
   .card-body{padding:12px;display:flex;flex-direction:column;gap:4px;flex:1;}
   .card-name{font-size:14px;font-weight:600;color:var(--ink);line-height:1.3;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .card-price-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:auto;padding-top:6px;}
-  .card-add-btn{margin-top:8px;width:100%;display:flex;align-items:center;justify-content:center;gap:7px;}
+  .card-add-btn{margin-top:8px;width:100%;display:flex;align-items:center;justify-content:center;gap:7px;padding:8px 14px;font-size:12.5px;}
   .card-add-btn svg{width:16px;height:16px;flex-shrink:0;}
   .card-price{font-family:'Fraunces',serif;font-size:17px;font-weight:600;color:var(--navy);margin-top:auto;padding-top:6px;}
-  .card-add-btn{padding:8px 14px;font-size:12.5px;}
   .btn{border:0;border-radius:6px;padding:9px 12px;font-size:13px;font-weight:600;}
   .btn-dark{background:var(--navy);color:#fff;flex:1;}
   .btn-outline{background:transparent;border:1px solid var(--line);color:var(--navy);}
@@ -116,7 +114,8 @@
   footer h4{color:#fff;font-size:15px;margin-bottom:12px;}
   footer p{color:#C9C3B2;font-size:13.5px;max-width:320px;}
   footer ul{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px;}
-  footer ul a{color:#C9C3B2;font-size:13.5px;}
+  footer ul li, footer ul a{color:#C9C3B2;font-size:13.5px;}
+  footer ul a:hover{color:#fff;}
   .foot-bottom{padding-top:16px;font-size:12.5px;color:#9c9789;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;}
 
   /* ---------- page header ---------- */
@@ -159,10 +158,12 @@
   .field.full{grid-column:1/-1;}
   .field label{font-size:13px;font-weight:600;color:var(--ink);}
   .field input,.field select,.field textarea{border:1px solid var(--line);border-radius:6px;padding:10px 12px;font-size:14px;font-family:inherit;background:var(--paper);color:var(--ink);}
-  .field input:focus,.field select:focus{outline:2px solid var(--teal);outline-offset:1px;border-color:var(--teal);}
+  .field textarea{resize:vertical;min-height:70px;}
+  .field input:focus,.field select:focus,.field textarea:focus{outline:2px solid var(--teal);outline-offset:1px;border-color:var(--teal);}
   .pay-options{display:flex;flex-direction:column;gap:10px;margin-top:6px;}
   .pay-option{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:6px;padding:12px 14px;font-size:14px;font-weight:500;}
   .pay-option input{margin:0;}
+  .pay-option:has(input:checked){border-color:var(--navy);background:var(--bg);}
 
   .checkout-layout{display:grid;grid-template-columns:1.3fr 0.9fr;gap:40px;padding-bottom:56px;}
   .checkout-block{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius-md);padding:24px;margin-bottom:22px;}
@@ -223,8 +224,8 @@
   .toast.show{opacity:1;transform:translateY(0);}
 
   /* ---------- bande de confiance ---------- */
-  .trust-strip{border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:var(--paper);}
-  .trust-strip-inner{display:flex;justify-content:space-between;gap:24px;padding:18px 0;flex-wrap:wrap;}
+  .trust-strip{margin:0 -24px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:var(--paper);}
+  .trust-strip-inner{display:flex;justify-content:space-between;gap:24px;padding:18px 24px;flex-wrap:wrap;}
   .trust-item{display:flex;align-items:center;gap:10px;font-size:13px;font-weight:600;color:var(--ink-soft);}
   .trust-item .ic{width:30px;height:30px;border-radius:50%;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;}
 
@@ -283,7 +284,8 @@
   @media (max-width:768px){
     .wrap{padding:0 16px;}
     .steps-grid, .testi-grid{grid-template-columns:1fr;}
-    .trust-strip-inner{justify-content:flex-start;gap:16px;}
+    .trust-strip{margin:0 -16px;}
+    .trust-strip-inner{justify-content:flex-start;gap:12px 20px;padding:14px 16px;}
     .trust-item{font-size:12px;}
     .headbar{padding:12px 16px;gap:12px;}
     .searchbar{order:3;flex-basis:100%;max-width:none;margin-top:8px;}
@@ -361,7 +363,7 @@
   <div class="headbar">
     <a href="#" class="logo" onclick="showPage('home');return false;"><span class="logo-mark">S</span>SHOPSN<span class="dot">.</span></a>
     <div class="searchbar">
-      <input id="searchInput" type="text" placeholder="Rechercher un produit">
+      <input id="searchInput" type="search" placeholder="Rechercher un produit" aria-label="Rechercher un produit" onkeydown="if(event.key==='Enter')applySearch()">
       <button onclick="applySearch()">Rechercher</button>
     </div>
     <div class="head-actions">
@@ -387,7 +389,7 @@
         <div>
           <h1>Le marché sénégalais, livré chez vous.</h1>
           <p class="lede">Mode, téléphonie, maison, beauté et alimentation, commandés en ligne et suivis jusqu'à la livraison.</p>
-          <button class="hero-cta" onclick="document.getElementById('products-section').scrollIntoView()">Voir les produits</button>
+          <button class="hero-cta" onclick="document.getElementById('products-section').scrollIntoView({behavior:'smooth'})">Voir les produits</button>
         </div>
         <div class="hero-gallery">
           <div class="hero-tile t1" id="heroTile1"></div>
@@ -397,12 +399,12 @@
       </div>
     </section>
 
-    <div class="trust-strip" style="margin:0 -24px;">
-      <div class="trust-strip-inner" style="padding:18px 24px;">
-        <div class="trust-item">Paiement sécurisé Wave &amp; Orange Money</div>
-        <div class="trust-item">Livraison partout au Sénégal</div>
-        <div class="trust-item">Retours faciles sous 48h</div>
-        <div class="trust-item">Vendeurs locaux vérifiés</div>
+    <div class="trust-strip">
+      <div class="trust-strip-inner">
+        <div class="trust-item"><span class="ic">🔒</span>Paiement sécurisé Wave &amp; Orange Money</div>
+        <div class="trust-item"><span class="ic">🚚</span>Livraison partout au Sénégal</div>
+        <div class="trust-item"><span class="ic">↩️</span>Retours faciles sous 48h</div>
+        <div class="trust-item"><span class="ic">✅</span>Vendeurs locaux vérifiés</div>
       </div>
     </div>
 
@@ -469,10 +471,10 @@
         <div class="checkout-block">
           <h3>Adresse de livraison</h3>
           <div class="form-grid">
-            <div class="field"><label>Nom complet</label><input id="ckName" type="text" placeholder="Aïssatou Diop"></div>
-            <div class="field"><label>Téléphone</label><input id="ckPhone" type="tel" placeholder="77 000 00 00"></div>
-            <div class="field full"><label>Adresse</label><input id="ckAddress" type="text" placeholder="Quartier, rue, numéro"></div>
-            <div class="field"><label>Ville</label><input id="ckCity" type="text" placeholder="Dakar"></div>
+            <div class="field"><label for="ckName">Nom complet</label><input id="ckName" type="text" autocomplete="name" placeholder="Aïssatou Diop"></div>
+            <div class="field"><label for="ckPhone">Téléphone</label><input id="ckPhone" type="tel" autocomplete="tel" inputmode="tel" placeholder="77 000 00 00"></div>
+            <div class="field full"><label for="ckAddress">Adresse</label><input id="ckAddress" type="text" autocomplete="street-address" placeholder="Quartier, rue, numéro"></div>
+            <div class="field"><label for="ckCity">Ville</label><input id="ckCity" type="text" autocomplete="address-level2" placeholder="Dakar"></div>
           </div>
         </div>
         <div class="checkout-block">
@@ -480,7 +482,6 @@
           <div class="pay-options">
             <label class="pay-option"><input type="radio" name="pay" value="Wave" checked> 🔵 Wave</label>
             <label class="pay-option"><input type="radio" name="pay" value="Orange Money"> 🟠 Orange Money</label>
-            <label class="pay-option"><input type="radio" name="pay" value="Carte bancaire"> 💳 Carte bancaire</label>
             <label class="pay-option"><input type="radio" name="pay" value="Paiement à la livraison"> 💵 Paiement à la livraison</label>
           </div>
           <p style="font-size:12px;color:var(--ink-soft);margin-top:12px;">🔒 Vos paiements Wave et Orange Money sont traités directement par leurs applications officielles — SHOPSN n'a jamais accès à vos codes secrets.</p>
@@ -489,7 +490,7 @@
       <div class="summary-box">
         <h3 style="font-size:16px;margin-bottom:14px;">Récapitulatif</h3>
         <div id="checkoutSummary"></div>
-        <button class="btn btn-terracotta" style="width:100%;margin-top:14px;padding:13px;" onclick="placeOrder()">Confirmer la commande</button>
+        <button id="placeOrderBtn" class="btn btn-terracotta" style="width:100%;margin-top:14px;padding:13px;" onclick="placeOrder()">Confirmer la commande</button>
       </div>
     </div>
   </div>
@@ -503,8 +504,8 @@
       <h3 style="font-size:15px;">Retrouver mes commandes</h3>
       <p style="font-size:13px;color:var(--ink-soft);margin-bottom:14px;">Entrez le numéro de téléphone utilisé lors de la commande.</p>
       <div style="display:flex;gap:10px;">
-        <input id="myPhoneInput" type="tel" placeholder="77 000 00 00" style="flex:1;border:1px solid var(--line);border-radius:6px;padding:10px 12px;font-size:14px;">
-        <button class="btn btn-dark" onclick="lookupMyOrders()">Voir</button>
+        <input id="myPhoneInput" type="tel" inputmode="tel" placeholder="77 000 00 00" aria-label="Numéro de téléphone" onkeydown="if(event.key==='Enter')lookupMyOrders()" style="flex:1;min-width:0;border:1px solid var(--line);border-radius:6px;padding:10px 12px;font-size:14px;">
+        <button class="btn btn-dark" style="flex:0 0 auto;" onclick="lookupMyOrders()">Voir</button>
       </div>
     </div>
     <div id="ordersContent"></div>
@@ -545,7 +546,7 @@
         <button class="active" data-panel="admin-products" onclick="showAdminPanel('admin-products',this)">Produits</button>
         <button data-panel="admin-categories" onclick="showAdminPanel('admin-categories',this)">Catégories</button>
         <button data-panel="admin-stock" onclick="showAdminPanel('admin-stock',this)">Stocks</button>
-        <button data-panel="admin-users" onclick="showAdminPanel('admin-users',this)">Utilisateurs</button>
+        <button data-panel="admin-users" onclick="showAdminPanel('admin-users',this)">Clients</button>
         <button data-panel="admin-orders" onclick="showAdminPanel('admin-orders',this)">Commandes</button>
       </div>
       <div>
@@ -555,8 +556,9 @@
             <div class="form-grid">
               <div class="field"><label>Nom</label><input id="apName" type="text"></div>
               <div class="field"><label>Catégorie</label><select id="apCategory"></select></div>
-              <div class="field"><label>Prix (FCFA)</label><input id="apPrice" type="number"></div>
-              <div class="field"><label>Stock</label><input id="apStock" type="number"></div>
+              <div class="field"><label>Prix (FCFA)</label><input id="apPrice" type="number" min="1"></div>
+              <div class="field"><label>Stock</label><input id="apStock" type="number" min="0"></div>
+              <div class="field full"><label>Description (optionnel)</label><textarea id="apDesc" rows="3" placeholder="Matière, taille, utilisation…"></textarea></div>
               <div class="field full">
                 <label>Photo principale (optionnel)</label>
                 <div class="image-upload-row">
@@ -596,7 +598,7 @@
         </div>
 
         <div class="admin-panel" id="admin-users">
-          <table><thead><tr><th>Nom</th><th>Email</th><th>Rôle</th><th>Commandes</th></tr></thead>
+          <table><thead><tr><th>Nom</th><th>Téléphone</th><th>Commandes</th><th>Total dépensé</th><th>Dernière commande</th></tr></thead>
           <tbody id="adminUsersTable"></tbody></table>
         </div>
 
@@ -654,7 +656,7 @@
   <div class="modal-box">
     <h3>Espace administrateur</h3>
     <p class="sub">Accès réservé à l'équipe SHOPSN.</p>
-    <div class="field"><label>Mot de passe</label><input id="adminPass" type="password"></div>
+    <div class="field"><label for="adminPass">Mot de passe</label><input id="adminPass" type="password" autocomplete="current-password" onkeydown="if(event.key==='Enter')checkAdminPass()"></div>
     <div class="modal-close-row">
       <button class="btn btn-outline" onclick="closeModal('adminModal')">Annuler</button>
       <button class="btn btn-dark" onclick="checkAdminPass()">Entrer</button>
@@ -668,8 +670,9 @@
     <p class="sub">Mettez à jour les informations puis enregistrez.</p>
     <div class="field" style="margin-bottom:12px;"><label>Nom</label><input id="epName" type="text"></div>
     <div class="field" style="margin-bottom:12px;"><label>Catégorie</label><select id="epCategory"></select></div>
-    <div class="field" style="margin-bottom:12px;"><label>Prix (FCFA)</label><input id="epPrice" type="number"></div>
-    <div class="field" style="margin-bottom:12px;"><label>Stock</label><input id="epStock" type="number"></div>
+    <div class="field" style="margin-bottom:12px;"><label>Prix (FCFA)</label><input id="epPrice" type="number" min="1"></div>
+    <div class="field" style="margin-bottom:12px;"><label>Stock</label><input id="epStock" type="number" min="0"></div>
+    <div class="field" style="margin-bottom:12px;"><label>Description</label><textarea id="epDesc" rows="3"></textarea></div>
     <div class="field" style="margin-bottom:12px;">
       <label>Photo principale</label>
       <div class="image-upload-row">
@@ -730,21 +733,19 @@
   </div>
 </div>
 
-<div class="toast" id="toast"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
 /* =====================================================
    DONNÉES EN MÉMOIRE
    ===================================================== */
-const STATUS_STEPS = ['Commande passée','Paiement confirmée','Préparation','Expédition','Livraison en cours','Livraison terminée'];
+const STATUS_STEPS = ['Commande passée','Paiement confirmé','Préparation','Expédition','Livraison en cours','Livraison terminée'];
 
 let categories = []; // rempli depuis le backend (GET /api/catalog)
 let products = [];   // rempli depuis le backend (GET /api/catalog)
 
-let users = [
-  {id:1, name:'Aïssatou Diop', email:'aissatou.diop@example.com', role:'Client'},
-  {id:2, name:'Moussa Ndiaye', email:'moussa.ndiaye@example.com', role:'Client'},
-];
+const DELIVERY_FEE = 1500; // identique à DELIVERY_FEE dans routes/orders.js
+const COD_LABEL = 'Paiement à la livraison';
 
 let orders = []; // rempli depuis le backend (GET /api/orders)
 
@@ -766,8 +767,21 @@ function catClass(catId){ return CATEGORY_CLASSES[catId] || 'cat-mode'; }
 /* =====================================================
    UTILITAIRES
    ===================================================== */
-function formatPrice(n){ return n.toLocaleString('fr-FR') + ' FCFA'; }
+function formatPrice(n){ return Number(n||0).toLocaleString('fr-FR') + ' FCFA'; }
 function catInfo(id){ return categories.find(c => c.id === id); }
+function catName(id){ const c = catInfo(id); return c ? c.name : 'Autre'; }
+// Échappe le texte avant de l'insérer dans du HTML : les noms, adresses,
+// etc. viennent des clients et ne doivent jamais pouvoir injecter du code.
+function esc(v){
+  return String(v ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+}
+function phoneDigits(v){ return String(v||'').replace(/\D/g,''); }
+function storageGet(key, fallback){
+  try{ const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; }catch(e){ return fallback; }
+}
+function storageSet(key, value){
+  try{ localStorage.setItem(key, JSON.stringify(value)); }catch(e){}
+}
 function showToast(msg){
   const t = document.getElementById('toast');
   t.textContent = msg;
@@ -775,19 +789,38 @@ function showToast(msg){
   clearTimeout(t._timer);
   t._timer = setTimeout(()=>t.classList.remove('show'), 2200);
 }
-function openModal(id){ document.getElementById(id).classList.add('active'); }
+function openModal(id){
+  const m = document.getElementById(id);
+  m.classList.add('active');
+  const firstInput = m.querySelector('input:not([type=file]),select,textarea');
+  if(firstInput) setTimeout(()=>firstInput.focus(), 50);
+}
 function closeModal(id){ document.getElementById(id).classList.remove('active'); }
+// Ces fenêtres demandent une action explicite : on ne les ferme pas par
+// un clic à côté (sinon le client perdrait les infos de paiement).
+const STICKY_MODALS = ['orderWhatsAppModal','manualPaymentModal'];
+document.addEventListener('click', e => {
+  if(e.target.classList.contains('modal-overlay') && !STICKY_MODALS.includes(e.target.id)) closeModal(e.target.id);
+});
+document.addEventListener('keydown', e => {
+  if(e.key!=='Escape') return;
+  document.querySelectorAll('.modal-overlay.active').forEach(m => { if(!STICKY_MODALS.includes(m.id)) closeModal(m.id); });
+});
 
 function visualContent(p){
-  return p.image ? '<img src="'+p.image+'" alt="'+p.name+'">' : p.icon;
+  return p.image ? '<img src="'+esc(p.image)+'" alt="'+esc(p.name)+'" loading="lazy">' : esc(p.icon);
 }
 
-function showPage(id){
+const DEFAULT_TITLE = document.title;
+function showPage(id, fromHistory){
+  if(id==='admin' && !isAdmin){ openAdminModal(); return; }
+  if(id==='checkout' && cart.length===0){ id = 'cart'; }
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.getElementById('page-'+id).classList.add('active');
   window.scrollTo({top:0, behavior:'smooth'});
-  if(id!=='detail' && window.location.search.includes('produit=')){
-    history.pushState({}, '', '/');
+  if(id!=='detail'){
+    document.title = DEFAULT_TITLE;
+    if(!fromHistory && window.location.search.includes('produit=')) history.pushState({}, '', '/');
   }
   if(id==='cart') renderCart();
   if(id==='checkout') renderCheckoutSummary();
@@ -801,10 +834,12 @@ function showPage(id){
 function renderCategoryChips(){
   const box = document.getElementById('categoryChips');
   const all = [{id:'all', name:'Tous les produits'}, ...categories];
-  box.innerHTML = all.map(c => `<button class="chip ${activeCategory===c.id?'active':''}" onclick="setCategory('${c.id}')">${c.name}</button>`).join('');
+  box.innerHTML = all.map(c => `<button class="chip ${activeCategory===c.id?'active':''}" onclick="setCategory('${esc(c.id)}')">${c.icon ? esc(c.icon)+' ' : ''}${esc(c.name)}</button>`).join('');
 }
 function setCategory(id){
   activeCategory = id;
+  searchTerm = '';
+  document.getElementById('searchInput').value = '';
   showPage('home');
   renderCategoryChips();
   renderProducts();
@@ -818,10 +853,10 @@ function applySearch(){
 }
 function renderProducts(){
   let list = products.filter(p => activeCategory==='all' || p.cat===activeCategory);
-  if(searchTerm){ list = list.filter(p => p.name.toLowerCase().includes(searchTerm)); }
+  if(searchTerm){ list = list.filter(p => (p.name + ' ' + (p.desc||'') + ' ' + catName(p.cat)).toLowerCase().includes(searchTerm)); }
   const grid = document.getElementById('productGrid');
-  document.getElementById('productsTitle').textContent = activeCategory==='all' ? 'Tous les produits' : catInfo(activeCategory).name;
-  document.getElementById('productsCount').textContent = list.length + ' article(s)';
+  document.getElementById('productsTitle').textContent = searchTerm ? `Résultats pour « ${searchTerm} »` : activeCategory==='all' ? 'Tous les produits' : catName(activeCategory);
+  document.getElementById('productsCount').textContent = list.length + (list.length>1 ? ' articles' : ' article');
   if(list.length===0){
     grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;"><h3>Aucun produit trouvé</h3><p>Essayez une autre catégorie ou un autre mot-clé.</p></div>`;
     return;
@@ -829,16 +864,16 @@ function renderProducts(){
   grid.innerHTML = list.map(p => renderProductCard(p)).join('');
 }
 function renderProductCard(p){
-  const cat = catInfo(p.cat);
   return `
     <div class="card" onclick="openDetail(${p.id})" style="cursor:pointer;">
       <div class="card-visual ${p.image?'':catClass(p.cat)}">
         ${p.stock <= 5 && p.stock > 0 ? `<span class="stock-flag">Stock limité</span>` : ''}
-        <span class="cat-tag">${cat.name}</span>
+        ${p.stock===0 ? `<span class="stock-flag">Rupture de stock</span>` : ''}
+        <span class="cat-tag">${esc(catName(p.cat))}</span>
         ${visualContent(p)}
       </div>
       <div class="card-body">
-        <span class="card-name">${p.name}</span>
+        <span class="card-name" title="${esc(p.name)}">${esc(p.name)}</span>
         <span class="card-price">${formatPrice(p.price)}</span>
         <button class="btn btn-dark card-add-btn" ${p.stock===0?'disabled':''} onclick="event.stopPropagation();addToCart(${p.id},1)">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.5 3h2l2.4 12.2a2 2 0 0 0 2 1.6h8.6a2 2 0 0 0 2-1.6L21 7H6"/></svg>
@@ -856,7 +891,9 @@ function openDetail(id){
   detailQty = 1;
   renderDetail();
   showPage('detail');
-  history.pushState({}, '', '/?produit=' + id);
+  if(new URLSearchParams(window.location.search).get('produit') !== String(id)){
+    history.pushState({}, '', '/?produit=' + id);
+  }
 }
 function shareOnWhatsApp(id){
   const p = products.find(x=>x.id===id);
@@ -868,26 +905,26 @@ function shareOnWhatsApp(id){
 function renderDetail(){
   const p = products.find(x=>x.id===currentDetailProductId);
   if(!p) return;
-  const cat = catInfo(p.cat);
+  document.title = p.name + ' — SHOPSN';
   const gallery = [p.image, ...(p.images||[])].filter(Boolean);
   document.getElementById('detailContent').innerHTML = `
     <div>
       <div class="detail-visual ${p.image?'':catClass(p.cat)}" id="detailMainVisual">${visualContent(p)}</div>
-      ${gallery.length>1 ? `<div class="detail-gallery">${gallery.map((src,i)=>`<img src="${src}" class="${i===0?'active':''}" onclick="swapDetailImage('${src}', this)">`).join('')}</div>` : ''}
+      ${gallery.length>1 ? `<div class="detail-gallery">${gallery.map((src,i)=>`<img src="${esc(src)}" alt="Photo ${i+1}" class="${i===0?'active':''}" onclick="swapDetailImage(this)">`).join('')}</div>` : ''}
     </div>
     <div>
-      <span class="detail-cat">${cat.name}</span>
-      <h2 class="detail-title">${p.name}</h2>
+      <a href="#" class="detail-cat" onclick="setCategory('${esc(p.cat)}');return false;">${esc(catName(p.cat))}</a>
+      <h2 class="detail-title">${esc(p.name)}</h2>
       <div class="detail-price">${formatPrice(p.price)}</div>
-      <p class="detail-desc">${p.desc}</p>
+      <p class="detail-desc">${esc(p.desc)}</p>
       <div class="detail-stock" style="color:${p.stock===0 ? 'var(--pink)' : p.stock<=5 ? 'var(--pink)' : 'var(--green)'};">
         ${p.stock===0 ? 'Rupture de stock' : p.stock<=5 ? `Plus que ${p.stock} en stock` : 'En stock'}
       </div>
       <div class="qty-row">
         <div class="stepper">
-          <button onclick="changeDetailQty(-1)">−</button>
+          <button onclick="changeDetailQty(-1)" aria-label="Diminuer la quantité">−</button>
           <span id="detailQtyVal">${detailQty}</span>
-          <button onclick="changeDetailQty(1)">+</button>
+          <button onclick="changeDetailQty(1)" aria-label="Augmenter la quantité">+</button>
         </div>
         <button class="btn btn-terracotta" style="padding:12px 22px;" ${p.stock===0?'disabled':''} onclick="addToCart(${p.id}, detailQty)">Ajouter au panier</button>
       </div>
@@ -895,14 +932,17 @@ function renderDetail(){
     </div>
   `;
 }
-function swapDetailImage(src, el){
-  document.getElementById('detailMainVisual').innerHTML = '<img src="'+src+'">';
+function swapDetailImage(el){
+  const main = document.getElementById('detailMainVisual');
+  main.className = 'detail-visual';
+  main.innerHTML = '<img src="'+esc(el.getAttribute('src'))+'" alt="">';
   document.querySelectorAll('.detail-gallery img').forEach(img=>img.classList.remove('active'));
   el.classList.add('active');
 }
 function changeDetailQty(delta){
   const p = products.find(x=>x.id===currentDetailProductId);
-  detailQty = Math.max(1, Math.min(p.stock, detailQty+delta));
+  if(!p) return;
+  detailQty = Math.max(1, Math.min(Math.max(p.stock,1), detailQty+delta));
   document.getElementById('detailQtyVal').textContent = detailQty;
 }
 
@@ -913,12 +953,28 @@ function addToCart(productId, qty){
   const p = products.find(x=>x.id===productId);
   if(!p || p.stock===0) return;
   const existing = cart.find(c=>c.productId===productId);
+  const before = existing ? existing.qty : 0;
   if(existing){ existing.qty = Math.min(p.stock, existing.qty + qty); }
   else{ cart.push({productId, qty: Math.min(qty, p.stock)}); }
+  const after = cart.find(c=>c.productId===productId).qty;
   updateCartCount();
-  showToast(p.name + ' ajouté au panier');
+  if(after===before) showToast('Stock maximum atteint pour ' + p.name);
+  else showToast(p.name + ' ajouté au panier');
+}
+function saveCart(){ storageSet('shopsnCart', cart); }
+// Retire du panier les produits supprimés et ajuste les quantités au
+// stock réel (le panier est conservé entre deux visites).
+function syncCartWithCatalog(){
+  cart = cart.filter(c => {
+    const p = products.find(x=>x.id===c.productId);
+    if(!p || p.stock===0) return false;
+    c.qty = Math.max(1, Math.min(c.qty, p.stock));
+    return true;
+  });
+  updateCartCount();
 }
 function updateCartCount(){
+  saveCart();
   const count = cart.reduce((s,c)=>s+c.qty,0);
   const badge = document.getElementById('cartCount');
   badge.textContent = count;
@@ -927,8 +983,8 @@ function updateCartCount(){
 function cartLines(){
   return cart.map(c => {
     const p = products.find(x=>x.id===c.productId);
-    return {...c, product:p, lineTotal: p.price * c.qty};
-  });
+    return p ? {...c, product:p, lineTotal: p.price * c.qty} : null;
+  }).filter(Boolean);
 }
 function renderCart(){
   const lines = cartLines();
@@ -939,22 +995,22 @@ function renderCart(){
     return;
   }
   const subtotal = lines.reduce((s,l)=>s+l.lineTotal,0);
-  const livraison = 1500;
+  const livraison = DELIVERY_FEE;
   content.innerHTML = `
     <div class="cart-layout">
       <div>
         ${lines.map(l => `
           <div class="cart-row">
-            <div class="cart-visual ${l.product.image?'':catClass(l.product.cat)}">${visualContent(l.product)}</div>
+            <div class="cart-visual ${l.product.image?'':catClass(l.product.cat)}" style="cursor:pointer;" onclick="openDetail(${l.productId})">${visualContent(l.product)}</div>
             <div>
-              <div class="cart-name">${l.product.name}</div>
-              <div class="cart-cat">${catInfo(l.product.cat).name} · ${formatPrice(l.product.price)}</div>
+              <div class="cart-name">${esc(l.product.name)}</div>
+              <div class="cart-cat">${esc(catName(l.product.cat))} · ${formatPrice(l.product.price)}</div>
               <button class="cart-remove" onclick="removeFromCart(${l.productId})">Retirer</button>
             </div>
             <div class="stepper">
-              <button onclick="changeCartQty(${l.productId},-1)">−</button>
+              <button onclick="changeCartQty(${l.productId},-1)" aria-label="Diminuer la quantité">−</button>
               <span>${l.qty}</span>
-              <button onclick="changeCartQty(${l.productId},1)">+</button>
+              <button onclick="changeCartQty(${l.productId},1)" aria-label="Augmenter la quantité">+</button>
             </div>
             <div style="font-weight:700;">${formatPrice(l.lineTotal)}</div>
           </div>
@@ -973,6 +1029,8 @@ function renderCart(){
 function changeCartQty(productId, delta){
   const line = cart.find(c=>c.productId===productId);
   const p = products.find(x=>x.id===productId);
+  if(!line || !p) return;
+  if(delta>0 && line.qty>=p.stock) showToast('Stock maximum atteint');
   line.qty = Math.max(1, Math.min(p.stock, line.qty+delta));
   updateCartCount();
   renderCart();
@@ -989,9 +1047,17 @@ function removeFromCart(productId){
 function renderCheckoutSummary(){
   const lines = cartLines();
   const subtotal = lines.reduce((s,l)=>s+l.lineTotal,0);
-  const livraison = lines.length ? 1500 : 0;
+  const livraison = lines.length ? DELIVERY_FEE : 0;
+  // Pré-remplit les coordonnées utilisées lors de la dernière commande.
+  const saved = storageGet('shopsnCustomer', null);
+  if(saved){
+    [['ckName','name'],['ckPhone','phone'],['ckAddress','address'],['ckCity','city']].forEach(([id,key])=>{
+      const el = document.getElementById(id);
+      if(!el.value && saved[key]) el.value = saved[key];
+    });
+  }
   document.getElementById('checkoutSummary').innerHTML = `
-    ${lines.map(l => `<div class="summary-row"><span>${l.product.name} × ${l.qty}</span><span>${formatPrice(l.lineTotal)}</span></div>`).join('')}
+    ${lines.map(l => `<div class="summary-row"><span>${esc(l.product.name)} × ${l.qty}</span><span>${formatPrice(l.lineTotal)}</span></div>`).join('')}
     <div class="summary-row"><span>Livraison</span><span>${formatPrice(livraison)}</span></div>
     <div class="summary-row total"><span>Total</span><span>${formatPrice(subtotal+livraison)}</span></div>
   `;
@@ -1044,19 +1110,18 @@ async function placeOrder(){
   const address = document.getElementById('ckAddress').value.trim();
   const city = document.getElementById('ckCity').value.trim();
   if(!name || !phone || !address || !city){ showToast('Merci de remplir tous les champs de livraison'); return; }
+  if(phoneDigits(phone).length < 9){ showToast('Numéro de téléphone invalide (9 chiffres minimum)'); document.getElementById('ckPhone').focus(); return; }
   const payment = document.querySelector('input[name="pay"]:checked').value;
-  const livraison = 1500;
-  const total = lines.reduce((s,l)=>s+l.lineTotal,0) + livraison;
 
+  // Le serveur recalcule lui-même les prix et le total à partir du catalogue.
   const payload = {
     name, phone,
     address: address + ', ' + city,
     payment,
-    total,
-    items: lines.map(l=>({id:l.productId, name:l.product.name, qty:l.qty, price:l.product.price}))
+    items: lines.map(l=>({id:l.productId, qty:l.qty}))
   };
 
-  const confirmBtn = document.querySelector('.summary-box .btn-terracotta');
+  const confirmBtn = document.getElementById('placeOrderBtn');
   confirmBtn.disabled = true;
   confirmBtn.textContent = 'Création de la commande…';
 
@@ -1066,13 +1131,20 @@ async function placeOrder(){
       method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)
     });
     const orderData = await orderRes.json();
-    if(!orderRes.ok){ showToast(orderData.error || 'Erreur lors de la création de la commande'); resetConfirmBtn(confirmBtn); return; }
+    if(!orderRes.ok){
+      showToast(orderData.error || 'Erreur lors de la création de la commande');
+      resetConfirmBtn(confirmBtn);
+      await fetchCatalog(); syncCartWithCatalog(); renderCheckoutSummary(); renderProducts();
+      return;
+    }
     const order = orderData.order;
 
     // La commande est déjà enregistrée côté serveur : on peut vider le
-    // panier et mettre à jour le stock affiché tout de suite.
-    lines.forEach(l => { l.product.stock -= l.qty; });
+    // panier et recharger le stock à jour.
     cart = []; updateCartCount();
+    storageSet('shopsnCustomer', {name, phone, address, city});
+    try{ sessionStorage.setItem('myPhone', phone); }catch(e){}
+    fetchCatalog().then(renderProducts);
 
     // 2. On affiche un récapitulatif avec un bouton d'envoi WhatsApp avant
     //    de poursuivre vers le paiement (Wave/Orange) ou la confirmation finale.
@@ -1090,31 +1162,34 @@ async function placeOrder(){
 async function continueAfterOrderConfirmation(){
   closeModal('orderWhatsAppModal');
   const order = pendingOrder;
+  pendingOrder = null;
   if(!order){ showPage('orders'); return; }
-
-  if(order.payment === 'Wave'){
-    const waveRes = await fetch('/api/wave/checkout', {
-      method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({orderId: order.id})
-    });
-    const waveData = await waveRes.json();
-    if(!waveRes.ok){ await showManualPayment('Wave', order.id, order.total); return; }
-    window.location.href = waveData.launchUrl;
+  if(order.payment === 'Wave' || order.payment === 'Orange Money'){
+    await startPayment(order);
     return;
   }
-
-  if(order.payment === 'Orange Money'){
-    const omRes = await fetch('/api/orange/checkout', {
-      method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({orderId: order.id})
-    });
-    const omData = await omRes.json();
-    if(!omRes.ok){ await showManualPayment('Orange Money', order.id, order.total); return; }
-    window.location.href = omData.paymentUrl;
-    return;
-  }
-
-  // Carte bancaire et paiement à la livraison : pas de redirection en ligne pour l'instant.
+  // Paiement à la livraison : rien à payer en ligne.
   showToast('Commande confirmée !');
   showPage('orders');
+}
+// Lance le paiement en ligne (API officielle si configurée, sinon
+// affichage des numéros du vendeur pour un paiement manuel). Utilisé
+// juste après la commande, et par le bouton "Payer" de Mes commandes.
+async function startPayment(order){
+  const isWave = order.payment === 'Wave';
+  try{
+    const res = await fetch(isWave ? '/api/wave/checkout' : '/api/orange/checkout', {
+      method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({orderId: order.id})
+    });
+    const data = await res.json();
+    const url = isWave ? data.launchUrl : data.paymentUrl;
+    if(res.ok && url){ window.location.href = url; return; }
+  }catch(err){}
+  await showManualPayment(order.payment, order.id, order.total);
+}
+async function payMyOrder(orderId){
+  const order = myOrders.find(o=>o.id===orderId);
+  if(order) await startPayment(order);
 }
 function resetConfirmBtn(btn){
   btn.disabled = false;
@@ -1128,7 +1203,7 @@ async function showManualPayment(method, orderId, amount){
     info = await res.json();
   }catch(err){}
   const number = method === 'Wave' ? info.waveNumber : info.orangeNumber;
-  document.getElementById('manualPaymentTitle').textContent = 'Paiement ' + method;
+  document.getElementById('manualPaymentTitle').textContent = (method === 'Wave' ? '🔵 ' : '🟠 ') + 'Paiement ' + method;
   document.getElementById('manualPaymentNumber').textContent = number || 'Numéro non renseigné par le vendeur';
   document.getElementById('manualPaymentName').textContent = info.sellerName;
   document.getElementById('manualPaymentAmount').textContent = formatPrice(amount);
@@ -1145,9 +1220,11 @@ function confirmManualPaymentSent(){
 /* =====================================================
    MES COMMANDES
    ===================================================== */
+let myOrders = [];
 async function renderOrders(){
   const content = document.getElementById('ordersContent');
-  const savedPhone = sessionStorage.getItem('myPhone');
+  let savedPhone = null;
+  try{ savedPhone = sessionStorage.getItem('myPhone'); }catch(e){}
   if(savedPhone){
     document.getElementById('myPhoneInput').value = savedPhone;
     await lookupMyOrders();
@@ -1163,9 +1240,10 @@ async function lookupMyOrders(){
   try{
     const res = await fetch('/api/orders/mine?phone='+encodeURIComponent(phone));
     const data = await res.json();
-    if(!res.ok){ content.innerHTML = `<div class="empty-state"><h3>${data.error||'Erreur'}</h3></div>`; return; }
-    sessionStorage.setItem('myPhone', phone);
-    renderMyOrdersList(data.orders || []);
+    if(!res.ok){ content.innerHTML = `<div class="empty-state"><h3>${esc(data.error||'Erreur')}</h3></div>`; return; }
+    try{ sessionStorage.setItem('myPhone', phone); }catch(e){}
+    myOrders = data.orders || [];
+    renderMyOrdersList(myOrders);
   }catch(err){
     content.innerHTML = `<div class="empty-state"><h3>Impossible de contacter le serveur</h3></div>`;
   }
@@ -1179,8 +1257,8 @@ function renderMyOrdersList(list){
   content.innerHTML = list.map(o => `
     <div class="order-card">
       <div class="order-head">
-        <div><span class="oid">Commande #${o.id.slice(0,8)}</span><div class="odate">${new Date(o.createdAt).toLocaleString('fr-FR')} · ${o.address}</div></div>
-        <span class="status-badge">${o.paid || o.status>0 ? STATUS_STEPS[o.status] : 'En attente de paiement'}</span>
+        <div><span class="oid">Commande #${o.id.slice(0,8)}</span><div class="odate">${new Date(o.createdAt).toLocaleString('fr-FR')} · ${esc(o.address)}</div></div>
+        <span class="status-badge" style="${!o.paid && o.status===0 ? 'background:var(--gold);color:var(--navy);' : ''}">${o.paid || o.status>0 ? STATUS_STEPS[o.status] : 'En attente de paiement'}</span>
       </div>
       <div class="timeline">
         ${STATUS_STEPS.map((s,i) => `
@@ -1190,10 +1268,13 @@ function renderMyOrdersList(list){
           </div>`).join('')}
       </div>
       <div class="order-items">
-        ${o.items.map(it => `${it.name} × ${it.qty} — ${formatPrice(it.price*it.qty)}`).join('<br>')}
-        <div style="margin-top:8px;font-weight:700;color:var(--ink);">Total : ${formatPrice(o.total)} · Paiement : ${o.payment}</div>
+        ${o.items.map(it => `${esc(it.name)} × ${it.qty} — ${formatPrice(it.price*it.qty)}`).join('<br>')}
+        <div style="margin-top:8px;font-weight:700;color:var(--ink);">Total : ${formatPrice(o.total)} · Paiement : ${esc(o.payment)}</div>
       </div>
-      ${!o.paid ? `<button class="btn btn-danger" style="margin-top:14px;" onclick="cancelMyOrder('${o.id}')">Annuler cette commande</button>` : ''}
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;">
+        ${!o.paid && (o.payment==='Wave' || o.payment==='Orange Money') ? `<button class="btn btn-dark" style="flex:0 0 auto;" onclick="payMyOrder('${o.id}')">Payer ${formatPrice(o.total)}</button>` : ''}
+        ${o.cancellable ? `<button class="btn btn-danger" onclick="cancelMyOrder('${o.id}')">Annuler cette commande</button>` : ''}
+      </div>
     </div>
   `).join('');
 }
@@ -1206,6 +1287,7 @@ async function cancelMyOrder(orderId){
     if(!res.ok){ showToast(data.error || 'Erreur lors de l\'annulation'); return; }
     showToast('Commande annulée');
     lookupMyOrders();
+    fetchCatalog().then(renderProducts);
   }catch(err){
     showToast('Impossible de contacter le serveur');
   }
@@ -1228,7 +1310,8 @@ async function checkAdminPass(){
     if(res.ok && data.ok){
       isAdmin = true;
       adminToken = data.token;
-      sessionStorage.setItem('adminToken', data.token);
+      try{ sessionStorage.setItem('adminToken', data.token); }catch(e){}
+      document.getElementById('adminPass').value = '';
       closeModal('adminModal');
       showPage('admin');
       showToast("Connecté en tant qu'administrateur");
@@ -1243,52 +1326,73 @@ async function checkAdminPass(){
 /* =====================================================
    UPLOAD D'IMAGE (base64 en mémoire)
    ===================================================== */
-function previewImage(input, previewId){
-  const file = input.files && input.files[0];
-  const preview = document.getElementById(previewId);
-  if(!file){ preview.innerHTML = '🖼️'; preview.dataset.value=''; return; }
-  const reader = new FileReader();
-  reader.onload = function(e){
-    preview.innerHTML = '<img src="'+e.target.result+'">';
-    preview.dataset.value = e.target.result;
-  };
-  reader.readAsDataURL(file);
-}
-function previewGallery(input, previewId){
-  const files = Array.from(input.files || []).slice(0, 3); // max 3 photos supplémentaires
-  const preview = document.getElementById(previewId);
-  preview.innerHTML = '';
-  preview.dataset.value = '[]';
-  if(files.length === 0) return;
-  const images = [];
-  let loaded = 0;
-  files.forEach((file, i) => {
+// Les photos de téléphone font souvent plusieurs Mo : on les redimensionne
+// (1000px max) et on les recompresse en JPEG avant l'envoi, pour que le
+// site reste rapide et que l'envoi ne dépasse pas la limite du serveur.
+function compressImage(file, maxSize = 1000, quality = 0.82){
+  return new Promise((resolve, reject) => {
     const reader = new FileReader();
-    reader.onload = function(e){
-      images[i] = e.target.result;
-      loaded++;
-      if(loaded === files.length){
-        preview.dataset.value = JSON.stringify(images.filter(Boolean));
-        preview.innerHTML = images.filter(Boolean).map(src => '<img src="'+src+'">').join('');
-      }
+    reader.onerror = reject;
+    reader.onload = e => {
+      const img = new Image();
+      img.onerror = reject;
+      img.onload = () => {
+        const scale = Math.min(1, maxSize / Math.max(img.width, img.height));
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.round(img.width * scale);
+        canvas.height = Math.round(img.height * scale);
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.src = e.target.result;
     };
     reader.readAsDataURL(file);
   });
+}
+async function previewImage(input, previewId){
+  const file = input.files && input.files[0];
+  const preview = document.getElementById(previewId);
+  if(!file){ preview.innerHTML = '🖼️'; preview.dataset.value=''; return; }
+  try{
+    const data = await compressImage(file);
+    preview.innerHTML = '<img src="'+data+'" alt="">';
+    preview.dataset.value = data;
+  }catch(err){ showToast('Image illisible, essayez un autre fichier'); input.value=''; }
+}
+async function previewGallery(input, previewId){
+  const files = Array.from(input.files || []).slice(0, 3); // max 3 photos supplémentaires
+  const preview = document.getElementById(previewId);
+  if((input.files||[]).length > 3) showToast('3 photos maximum : seules les 3 premières sont gardées');
+  preview.innerHTML = '';
+  preview.dataset.value = '[]';
+  if(files.length === 0) return;
+  try{
+    const images = await Promise.all(files.map(f => compressImage(f)));
+    preview.dataset.value = JSON.stringify(images);
+    preview.innerHTML = images.map(src => '<img src="'+src+'" alt="">').join('');
+  }catch(err){ showToast('Une des images est illisible'); input.value=''; }
 }
 
 /* =====================================================
    ADMIN — PRODUITS
    ===================================================== */
 function populateCategorySelect(){
-  document.getElementById('apCategory').innerHTML = categories.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+  document.getElementById('apCategory').innerHTML = categories.map(c=>`<option value="${esc(c.id)}">${esc(c.icon)} ${esc(c.name)}</option>`).join('');
 }
 function renderAdminProducts(){
   const search = (document.getElementById('adminProductSearch')?.value || '').trim().toLowerCase();
   const list = search ? products.filter(p=>p.name.toLowerCase().includes(search)) : products;
+  if(list.length===0){
+    document.getElementById('adminProductsTable').innerHTML = `<tr><td colspan="5">Aucun produit trouvé</td></tr>`;
+    return;
+  }
   document.getElementById('adminProductsTable').innerHTML = list.map(p => `
     <tr>
-      <td><span class="thumb ${p.image?'':catClass(p.cat)}">${visualContent(p)}</span>${p.name}</td>
-      <td>${catInfo(p.cat) ? catInfo(p.cat).name : '—'}</td>
+      <td><span class="thumb ${p.image?'':catClass(p.cat)}">${visualContent(p)}</span>${esc(p.name)}</td>
+      <td>${esc(catName(p.cat))}</td>
       <td>${formatPrice(p.price)}</td>
       <td class="${p.stock<=5?'low-stock':''}">${p.stock}</td>
       <td class="row-actions">
@@ -1303,17 +1407,21 @@ async function addProduct(){
   const cat = document.getElementById('apCategory').value;
   const price = parseInt(document.getElementById('apPrice').value);
   const stock = parseInt(document.getElementById('apStock').value);
+  const desc = document.getElementById('apDesc').value.trim();
   const image = document.getElementById('apImagePreview').dataset.value || null;
   const images = JSON.parse(document.getElementById('apGalleryPreview').dataset.value || '[]');
   if(!name || !cat || !price || isNaN(stock)){ showToast('Merci de remplir tous les champs'); return; }
+  if(price <= 0 || stock < 0){ showToast('Le prix doit être positif et le stock ne peut pas être négatif'); return; }
   try{
     const res = await fetch('/api/catalog/products', {
       method:'POST', headers:{'Content-Type':'application/json', 'x-admin-token': adminToken},
-      body: JSON.stringify({name, cat, price, stock, image, images})
+      body: JSON.stringify({name, cat, price, stock, desc, image, images})
     });
+    if(res.status===401){ resetAdminSession(); return; }
     const data = await res.json();
     if(!res.ok){ showToast(data.error || 'Erreur lors de l\'ajout'); return; }
     document.getElementById('apName').value='';
+    document.getElementById('apDesc').value='';
     document.getElementById('apPrice').value='';
     document.getElementById('apStock').value='';
     document.getElementById('apImage').value='';
@@ -1329,8 +1437,11 @@ async function addProduct(){
   }catch(err){ showToast('Impossible de contacter le serveur'); }
 }
 async function deleteProduct(id){
+  const p = products.find(x=>x.id===id);
+  if(!confirm('Supprimer définitivement « ' + (p ? p.name : 'ce produit') + ' » ?')) return;
   try{
-    await fetch('/api/catalog/products/'+id, { method:'DELETE', headers:{'x-admin-token': adminToken} });
+    const res = await fetch('/api/catalog/products/'+id, { method:'DELETE', headers:{'x-admin-token': adminToken} });
+    if(res.status===401){ resetAdminSession(); return; }
     await fetchCatalog();
     renderAdminAll();
     renderProducts();
@@ -1342,16 +1453,17 @@ function editProduct(id){
   if(!p) return;
   editingProductId = id;
   document.getElementById('epName').value = p.name;
-  document.getElementById('epCategory').innerHTML = categories.map(c=>`<option value="${c.id}" ${c.id===p.cat?'selected':''}>${c.name}</option>`).join('');
+  document.getElementById('epCategory').innerHTML = categories.map(c=>`<option value="${esc(c.id)}" ${c.id===p.cat?'selected':''}>${esc(c.icon)} ${esc(c.name)}</option>`).join('');
   document.getElementById('epPrice').value = p.price;
   document.getElementById('epStock').value = p.stock;
+  document.getElementById('epDesc').value = p.desc || '';
   const preview = document.getElementById('epImagePreview');
-  if(p.image){ preview.innerHTML = '<img src="'+p.image+'">'; preview.dataset.value = p.image; }
+  if(p.image){ preview.innerHTML = '<img src="'+esc(p.image)+'" alt="">'; preview.dataset.value = p.image; }
   else{ preview.innerHTML = '🖼️'; preview.dataset.value=''; }
   document.getElementById('epImage').value = '';
   const galleryPreview = document.getElementById('epGalleryPreview');
   const existingImages = p.images || [];
-  galleryPreview.innerHTML = existingImages.map(src => '<img src="'+src+'">').join('');
+  galleryPreview.innerHTML = existingImages.map(src => '<img src="'+esc(src)+'" alt="">').join('');
   galleryPreview.dataset.value = JSON.stringify(existingImages);
   document.getElementById('epGalleryImages').value = '';
   openModal('editProductModal');
@@ -1361,14 +1473,17 @@ async function saveProductEdit(){
   const cat = document.getElementById('epCategory').value;
   const price = parseInt(document.getElementById('epPrice').value);
   const stock = parseInt(document.getElementById('epStock').value);
+  const desc = document.getElementById('epDesc').value.trim();
   const image = document.getElementById('epImagePreview').dataset.value || null;
   const images = JSON.parse(document.getElementById('epGalleryPreview').dataset.value || '[]');
   if(!name || !cat || !price || isNaN(stock)){ showToast('Merci de remplir tous les champs'); return; }
+  if(price <= 0 || stock < 0){ showToast('Le prix doit être positif et le stock ne peut pas être négatif'); return; }
   try{
     const res = await fetch('/api/catalog/products/'+editingProductId, {
       method:'PUT', headers:{'Content-Type':'application/json', 'x-admin-token': adminToken},
-      body: JSON.stringify({name, cat, price, stock, image, images})
+      body: JSON.stringify({name, cat, price, stock, desc, image, images})
     });
+    if(res.status===401){ closeModal('editProductModal'); resetAdminSession(); return; }
     const data = await res.json();
     if(!res.ok){ showToast(data.error || 'Erreur de mise à jour'); return; }
     closeModal('editProductModal');
@@ -1385,10 +1500,10 @@ async function saveProductEdit(){
 function renderAdminCategories(){
   document.getElementById('adminCategoriesTable').innerHTML = categories.map(c => `
     <tr>
-      <td>${c.icon}</td>
-      <td>${c.name}</td>
+      <td>${esc(c.icon)}</td>
+      <td>${esc(c.name)}</td>
       <td>${products.filter(p=>p.cat===c.id).length}</td>
-      <td><button class="btn btn-danger" onclick="deleteCategory('${c.id}')">Supprimer</button></td>
+      <td><button class="btn btn-danger" onclick="deleteCategory('${esc(c.id)}')">Supprimer</button></td>
     </tr>
   `).join('');
 }
@@ -1400,6 +1515,7 @@ async function addCategory(){
     const res = await fetch('/api/catalog/categories', {
       method:'POST', headers:{'Content-Type':'application/json', 'x-admin-token': adminToken}, body: JSON.stringify({name, icon})
     });
+    if(res.status===401){ resetAdminSession(); return; }
     const data = await res.json();
     if(!res.ok){ showToast(data.error || 'Erreur lors de l\'ajout'); return; }
     document.getElementById('acName').value=''; document.getElementById('acIcon').value='';
@@ -1409,12 +1525,15 @@ async function addCategory(){
   }catch(err){ showToast('Impossible de contacter le serveur'); }
 }
 async function deleteCategory(id){
+  if(!confirm('Supprimer la catégorie « ' + catName(id) + ' » ?')) return;
   try{
-    const res = await fetch('/api/catalog/categories/'+id, { method:'DELETE', headers:{'x-admin-token': adminToken} });
+    const res = await fetch('/api/catalog/categories/'+encodeURIComponent(id), { method:'DELETE', headers:{'x-admin-token': adminToken} });
+    if(res.status===401){ resetAdminSession(); return; }
     const data = await res.json();
     if(!res.ok){ showToast(data.error || 'Impossible de supprimer'); return; }
     await fetchCatalog();
-    renderAdminAll(); renderCategoryChips(); populateCategorySelect();
+    if(activeCategory===id) activeCategory = 'all';
+    renderAdminAll(); renderCategoryChips(); populateCategorySelect(); renderProducts();
     showToast('Catégorie supprimée');
   }catch(err){ showToast('Impossible de contacter le serveur'); }
 }
@@ -1423,10 +1542,11 @@ async function deleteCategory(id){
    ADMIN — STOCKS
    ===================================================== */
 function renderAdminStock(){
-  document.getElementById('adminStockTable').innerHTML = products.map(p => `
+  const sorted = [...products].sort((a,b)=>a.stock-b.stock); // les plus urgents en premier
+  document.getElementById('adminStockTable').innerHTML = sorted.map(p => `
     <tr>
-      <td><span class="thumb ${p.image?'':catClass(p.cat)}">${visualContent(p)}</span>${p.name}</td>
-      <td>${catInfo(p.cat) ? catInfo(p.cat).name : '—'}</td>
+      <td><span class="thumb ${p.image?'':catClass(p.cat)}">${visualContent(p)}</span>${esc(p.name)}</td>
+      <td>${esc(catName(p.cat))}</td>
       <td class="${p.stock<=5?'low-stock':''}">${p.stock}</td>
       <td class="${p.stock===0?'low-stock':''}">${p.stock===0?'Rupture':p.stock<=5?'Stock faible':'Disponible'}</td>
     </tr>
@@ -1436,11 +1556,28 @@ function renderAdminStock(){
 /* =====================================================
    ADMIN — UTILISATEURS
    ===================================================== */
+// La liste des clients est déduite des commandes reçues (regroupées par
+// numéro de téléphone) : pas de comptes clients à gérer.
 function renderAdminUsers(){
-  document.getElementById('adminUsersTable').innerHTML = users.map(u => `
+  const byPhone = new Map();
+  orders.forEach(o => {
+    const key = phoneDigits(o.phone).slice(-9) || o.name;
+    const c = byPhone.get(key) || { name:o.name, phone:o.phone, count:0, spent:0, last:o.createdAt };
+    c.count++;
+    if(o.paid) c.spent += o.total;
+    if(o.createdAt > c.last){ c.last = o.createdAt; c.name = o.name; }
+    byPhone.set(key, c);
+  });
+  const clients = [...byPhone.values()].sort((a,b)=>b.last.localeCompare(a.last));
+  const tbody = document.getElementById('adminUsersTable');
+  if(clients.length===0){ tbody.innerHTML = `<tr><td colspan="5">Aucun client pour le moment</td></tr>`; return; }
+  tbody.innerHTML = clients.map(c => `
     <tr>
-      <td>${u.name}</td><td>${u.email}</td><td>${u.role}</td>
-      <td>${orders.filter(o=>o.name===u.name).length}</td>
+      <td>${esc(c.name)}</td>
+      <td><a href="https://wa.me/${phoneDigits(c.phone).length===9 ? '221'+phoneDigits(c.phone) : phoneDigits(c.phone)}" target="_blank" rel="noopener" style="color:var(--teal);font-weight:600;">${esc(c.phone)}</a></td>
+      <td>${c.count}</td>
+      <td>${formatPrice(c.spent)}</td>
+      <td>${new Date(c.last).toLocaleDateString('fr-FR')}</td>
     </tr>
   `).join('');
 }
@@ -1451,21 +1588,23 @@ function renderAdminUsers(){
 function resetAdminSession(){
   isAdmin = false;
   adminToken = null;
-  sessionStorage.removeItem('adminToken');
+  try{ sessionStorage.removeItem('adminToken'); }catch(e){}
   showToast('Session admin expirée, merci de vous reconnecter');
+  showPage('home');
   openModal('adminModal');
 }
 function adminLogout(){
+  fetch('/api/admin/logout', { method:'POST', headers:{'x-admin-token': adminToken} }).catch(()=>{});
   isAdmin = false;
   adminToken = null;
-  sessionStorage.removeItem('adminToken');
+  try{ sessionStorage.removeItem('adminToken'); }catch(e){}
   showToast('Déconnecté(e)');
   showPage('home');
 }
 async function fetchOrders(){
   try{
     const res = await fetch('/api/orders', { headers: { 'x-admin-token': adminToken } });
-    if(res.status===401){ resetAdminSession(); orders = []; return; }
+    if(res.status===401){ orders = []; resetAdminSession(); return; }
     const data = await res.json();
     orders = data.orders || [];
   }catch(err){
@@ -1488,6 +1627,7 @@ function whatsappStatusLabel(status){
     delivered: '🔵 Distribué',
     read: '🔵 Lu',
     failed: '🔴 Échec',
+    not_configured: '⚪ Non configuré',
   };
   return map[status] || '⚪ —';
 }
@@ -1499,11 +1639,11 @@ function renderAdminOrdersTable(){
   }
   tbody.innerHTML = orders.map(o => `
     <tr>
-      <td>#${o.id.slice(0,8)}</td><td>${o.name}</td><td>${formatPrice(o.total)}</td>
-      <td><span class="status-badge" style="${!o.paid?'background:var(--pink);':''}">${o.paid ? STATUS_STEPS[o.status] : 'En attente de paiement (' + o.payment + ')'}</span></td>
+      <td>#${o.id.slice(0,8)}<div style="font-size:11.5px;color:var(--ink-soft);">${new Date(o.createdAt).toLocaleDateString('fr-FR')}</div></td><td>${esc(o.name)}</td><td>${formatPrice(o.total)}</td>
+      <td><span class="status-badge" style="${!o.paid?'background:var(--pink);':''}">${o.paid ? STATUS_STEPS[o.status] : 'En attente de paiement (' + esc(o.payment) + ')'}</span></td>
       <td>
         ${whatsappStatusLabel(o.whatsappStatus)}
-        ${(!o.whatsappStatus || o.whatsappStatus==='failed') ? `<button class="btn btn-outline" style="margin-top:4px;padding:4px 8px;font-size:11px;" onclick="resendWhatsAppNotification('${o.id}')">Renvoyer</button>` : ''}
+        ${o.whatsappStatus==='failed' ? `<button class="btn btn-outline" style="margin-top:4px;padding:4px 8px;font-size:11px;" onclick="resendWhatsAppNotification('${o.id}')">Renvoyer</button>` : ''}
       </td>
       <td><button class="btn btn-outline" onclick="viewOrderDetail('${o.id}')">Voir</button></td>
       <td class="row-actions">
@@ -1521,12 +1661,12 @@ function viewOrderDetail(orderId){
   document.getElementById('orderDetailContent').innerHTML = `
     <div class="order-detail-row"><span class="order-detail-label">Référence</span><span>#${o.id.slice(0,8)}</span></div>
     <div class="order-detail-row"><span class="order-detail-label">Date</span><span>${new Date(o.createdAt).toLocaleString('fr-FR')}</span></div>
-    <div class="order-detail-row"><span class="order-detail-label">Client</span><span>${o.name}</span></div>
-    <div class="order-detail-row"><span class="order-detail-label">Téléphone</span><span>${o.phone}</span></div>
-    <div class="order-detail-row"><span class="order-detail-label">Adresse</span><span style="text-align:right;max-width:220px;">${o.address}</span></div>
-    <div class="order-detail-row"><span class="order-detail-label">Paiement</span><span>${o.payment} — ${o.paid ? 'confirmé' : 'en attente'}</span></div>
+    <div class="order-detail-row"><span class="order-detail-label">Client</span><span>${esc(o.name)}</span></div>
+    <div class="order-detail-row"><span class="order-detail-label">Téléphone</span><span><a href="tel:${esc(phoneDigits(o.phone))}" style="color:var(--teal);font-weight:600;">${esc(o.phone)}</a></span></div>
+    <div class="order-detail-row"><span class="order-detail-label">Adresse</span><span style="text-align:right;max-width:220px;">${esc(o.address)}</span></div>
+    <div class="order-detail-row"><span class="order-detail-label">Paiement</span><span>${esc(o.payment)} — ${o.paid ? 'confirmé' : 'en attente'}</span></div>
     <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--line);">
-      ${o.items.map(it => `<div class="order-detail-row"><span>${it.name} × ${it.qty}</span><span>${formatPrice(it.price*it.qty)}</span></div>`).join('')}
+      ${o.items.map(it => `<div class="order-detail-row"><span>${esc(it.name)} × ${it.qty}</span><span>${formatPrice(it.price*it.qty)}</span></div>`).join('')}
       <div class="order-detail-row" style="font-weight:700;color:var(--ink);"><span>Total</span><span>${formatPrice(o.total)}</span></div>
     </div>
   `;
@@ -1545,6 +1685,8 @@ async function resendWhatsAppNotification(orderId){
   }
 }
 async function confirmPaymentReceived(orderId){
+  const o = orders.find(x=>x.id===orderId);
+  if(o && !confirm('Confirmer avoir reçu ' + formatPrice(o.total) + ' de ' + o.name + ' (' + o.payment + ') ?\nVérifiez bien le montant sur votre téléphone avant de valider.')) return;
   try{
     const res = await fetch('/api/orders/'+orderId+'/confirm-payment', { method:'POST', headers:{'x-admin-token': adminToken} });
     const data = await res.json();
@@ -1597,25 +1739,45 @@ function renderHeroTiles(){
   // Affiche jusqu'à 3 vraies photos de produits dans le héros. S'il y a
   // moins de 3 produits avec une photo, les tuiles restantes gardent
   // leur simple aplat de couleur (défini en CSS).
+  // Sans photo, la tuile affiche l'icône d'une catégorie et y mène au clic.
   const withImage = products.filter(p => p.image);
   ['heroTile1','heroTile2','heroTile3'].forEach((id, i) => {
     const tile = document.getElementById(id);
     if(!tile) return;
     const p = withImage[i];
+    const c = categories[i];
+    tile.style.cursor = (p || c) ? 'pointer' : '';
     if(p){
-      tile.innerHTML = `<img src="${p.image}" alt="${p.name}"><span class="hero-tile-label">${p.name}</span>`;
-      tile.style.cursor = 'pointer';
+      tile.innerHTML = `<img src="${esc(p.image)}" alt="${esc(p.name)}"><span class="hero-tile-label">${esc(p.name)}</span>`;
       tile.onclick = () => openDetail(p.id);
+    } else if(c){
+      tile.innerHTML = `${esc(c.icon)}<span class="hero-tile-label">${esc(c.name)}</span>`;
+      tile.onclick = () => { setCategory(c.id); document.getElementById('products-section').scrollIntoView({behavior:'smooth'}); };
+    } else {
+      tile.innerHTML = ''; tile.onclick = null;
     }
   });
 }
+// Boutons Précédent / Suivant du navigateur (ex : retour depuis la fiche
+// d'un produit partagé sur WhatsApp).
+window.addEventListener('popstate', () => {
+  const id = Number(new URLSearchParams(window.location.search).get('produit'));
+  if(id && products.some(p=>p.id===id)){
+    currentDetailProductId = id; detailQty = 1; renderDetail(); showPage('detail', true);
+  } else {
+    showPage('home', true);
+  }
+});
 async function init(){
+  cart = storageGet('shopsnCart', []);
+  if(!Array.isArray(cart)) cart = [];
   await fetchCatalog();
+  syncCartWithCatalog();
   renderCategoryChips();
   renderProducts();
-  updateCartCount();
   populateCategorySelect();
-  const savedToken = sessionStorage.getItem('adminToken');
+  let savedToken = null;
+  try{ savedToken = sessionStorage.getItem('adminToken'); }catch(e){}
   if(savedToken){ adminToken = savedToken; isAdmin = true; }
   const sharedProductId = new URLSearchParams(window.location.search).get('produit');
   if(sharedProductId && products.some(p=>p.id===Number(sharedProductId))){
@@ -1624,6 +1786,10 @@ async function init(){
   if(window.location.pathname.replace(/\/$/, '') === '/admin'){
     openAdminModal();
   }
+  // Lien "Mes commandes" depuis les pages de retour de paiement.
+  try{
+    if(sessionStorage.getItem('openOrders')){ sessionStorage.removeItem('openOrders'); showPage('orders'); }
+  }catch(e){}
 }
 init();
 </script>
