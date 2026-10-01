@@ -167,6 +167,24 @@ adresse, et redémarre le serveur.
 - Le paiement par **carte bancaire** n'est pas branché : il faudrait un
   prestataire supplémentaire (ex. PayDunya, CinetPay) qui agrège plusieurs
   moyens de paiement. Dis-le-moi si tu veux que je l'ajoute.
-- Le stockage des commandes se fait dans un simple fichier
-  `data/orders.json`. Cela suffit pour un projet étudiant ; pour une vraie
-  boutique en production, il faudrait migrer vers une base de données.
+- Sans `MONGODB_URI`, commandes et produits sont rangés dans le dossier
+  `data/`. En ligne (surtout sur l'offre gratuite de Render, qui efface ce
+  dossier à chaque mise à jour), branchez une base MongoDB : voir
+  « Base de données » ci-dessous.
+
+## 8. Base de données (MongoDB Atlas, gratuit)
+
+1. Crée un compte sur https://www.mongodb.com/atlas et une base gratuite (offre
+   **M0**, région Europe de préférence, la plus proche du Sénégal).
+2. Dans **Database Access**, crée un utilisateur avec un mot de passe.
+3. Dans **Network Access**, ajoute l'adresse `0.0.0.0/0` (Render n'a pas
+   d'adresse fixe).
+4. Clique sur **Connect**, puis **Drivers**, et copie l'adresse qui commence
+   par `mongodb+srv://`. Remplace `<password>` par le mot de passe de l'étape 2.
+5. Dans Render, onglet **Environment**, ajoute `MONGODB_URI` avec cette adresse.
+
+Au premier démarrage, la base est remplie avec le catalogue d'exemple (ou avec
+le contenu du dossier `data/` s'il existe). Ensuite, tout ce que tu ajoutes
+dans l'espace admin et toutes les commandes restent enregistrés, même après une
+mise à jour du site. Si la base est injoignable, le site refuse de démarrer
+plutôt que de perdre des commandes (Render le relance tout seul).
