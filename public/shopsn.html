@@ -80,6 +80,10 @@
   .section-head{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:1px solid var(--line);padding-bottom:14px;margin-bottom:22px;}
   .section-head h2{font-size:24px;}
   .section-head .count{color:var(--ink-soft);font-size:13.5px;}
+  .section-tools{display:flex;align-items:center;gap:12px;}
+  .sort-select{border:1px solid var(--line);background:var(--paper);color:var(--navy);font:inherit;font-size:13px;font-weight:600;padding:7px 10px;border-radius:6px;cursor:pointer;}
+  .card.soldout .card-visual{filter:grayscale(0.85);opacity:0.7;}
+  .related{padding:8px 0 48px;}
 
   /* ---------- product grid ---------- */
   .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;}
@@ -299,6 +303,8 @@
     .card-visual{height:150px;font-size:36px;}
     .section{padding:24px 0;}
     .section-head h2{font-size:20px;}
+    .section-head{flex-wrap:wrap;gap:10px;align-items:center;}
+    .sort-select{font-size:12.5px;padding:6px 8px;}
     .detail-grid{grid-template-columns:1fr;gap:24px;padding:18px 0 40px;}
     .detail-visual{height:260px;font-size:70px;}
     .cart-layout{grid-template-columns:1fr;}
@@ -411,7 +417,15 @@
     <section class="section" id="products-section">
       <div class="section-head">
         <h2 id="productsTitle">Tous les produits</h2>
-        <span class="count" id="productsCount"></span>
+        <div class="section-tools">
+          <span class="count" id="productsCount"></span>
+          <select class="sort-select" id="sortSelect" onchange="setSort(this.value)" aria-label="Trier les produits">
+            <option value="default">Trier : par défaut</option>
+            <option value="price-asc">Prix croissant</option>
+            <option value="price-desc">Prix décroissant</option>
+            <option value="name">Nom (A à Z)</option>
+          </select>
+        </div>
       </div>
       <div class="grid" id="productGrid"></div>
     </section>
@@ -444,6 +458,10 @@
   <div class="wrap">
     <div class="page-title-row"><div class="breadcrumb" id="detailBreadcrumb"><a href="#" onclick="showPage('home');return false;">Accueil</a></div></div>
     <div class="detail-grid" id="detailContent"></div>
+    <section class="related" id="relatedSection" style="display:none;">
+      <div class="section-head"><h2>Vous aimerez aussi</h2></div>
+      <div class="grid" id="relatedGrid"></div>
+    </section>
   </div>
 </main>
 
@@ -757,6 +775,7 @@ let editingProductId = null;
 let detailQty = 1;
 let activeCategory = 'all';
 let searchTerm = '';
+let sortMode = 'default';
 
 const CATEGORY_CLASSES = {
   mode: 'cat-mode', electro: 'cat-electro', telephonie: 'cat-telephonie',
@@ -854,22 +873,37 @@ function applySearch(){
 function renderProducts(){
   let list = products.filter(p => activeCategory==='all' || p.cat===activeCategory);
   if(searchTerm){ list = list.filter(p => (p.name + ' ' + (p.desc||'') + ' ' + catName(p.cat)).toLowerCase().includes(searchTerm)); }
+  list = sortProducts(list);
   const grid = document.getElementById('productGrid');
   document.getElementById('productsTitle').textContent = searchTerm ? `Résultats pour « ${searchTerm} »` : activeCategory==='all' ? 'Tous les produits' : catName(activeCategory);
   document.getElementById('productsCount').textContent = list.length + (list.length>1 ? ' articles' : ' article');
+  document.getElementById('sortSelect').style.display = list.length>1 ? '' : 'none';
   if(list.length===0){
-    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;"><h3>Aucun produit trouvé</h3><p>Essayez une autre catégorie ou un autre mot-clé.</p></div>`;
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;"><h3>Aucun produit trouvé</h3><p>Essayez une autre catégorie ou un autre mot-clé.</p><button class="btn btn-dark" style="margin-top:16px;flex:none;padding:10px 20px;" onclick="setCategory('all')">Voir tous les produits</button></div>`;
     return;
   }
   grid.innerHTML = list.map(p => renderProductCard(p)).join('');
 }
-function renderProductCard(p){
+function sortProducts(list){
+  const sorted = [...list];
+  if(sortMode==='price-asc') sorted.sort((a,b)=>a.price-b.price);
+  else if(sortMode==='price-desc') sorted.sort((a,b)=>b.price-a.price);
+  else if(sortMode==='name') sorted.sort((a,b)=>a.name.localeCompare(b.name,'fr'));
+  // les produits en rupture passent toujours après ceux disponibles
+  return sorted.sort((a,b)=>(a.stock===0)-(b.stock===0));
+}
+function setSort(mode){
+  sortMode = mode;
+  renderProducts();
+}
+function renderProductCard(p, showCat){
+  if(showCat===undefined) showCat = activeCategory==='all';
   return `
-    <div class="card" onclick="openDetail(${p.id})" style="cursor:pointer;">
+    <div class="card ${p.stock===0?'soldout':''}" onclick="openDetail(${p.id})" style="cursor:pointer;">
       <div class="card-visual ${p.image?'':catClass(p.cat)}">
         ${p.stock <= 5 && p.stock > 0 ? `<span class="stock-flag">Stock limité</span>` : ''}
         ${p.stock===0 ? `<span class="stock-flag">Rupture de stock</span>` : ''}
-        ${activeCategory==='all' ? `<span class="cat-tag">${esc(catName(p.cat))}</span>` : ''}
+        ${showCat ? `<span class="cat-tag">${esc(catName(p.cat))}</span>` : ''}
         ${visualContent(p)}
       </div>
       <div class="card-body">
@@ -937,6 +971,17 @@ function renderDetail(){
       <button class="btn btn-outline" style="margin-top:14px;" onclick="shareOnWhatsApp(${p.id})">💬 Partager sur WhatsApp</button>
     </div>
   `;
+  renderRelated(p);
+}
+function renderRelated(p){
+  // d'abord les produits de la même catégorie, puis les autres, en stock en priorité
+  const others = products.filter(x => x.id!==p.id);
+  const byStock = (a,b) => (a.stock===0)-(b.stock===0);
+  const sameCat = others.filter(x => x.cat===p.cat).sort(byStock);
+  const rest = others.filter(x => x.cat!==p.cat).sort(byStock);
+  const list = [...sameCat, ...rest].slice(0,4);
+  document.getElementById('relatedSection').style.display = list.length ? '' : 'none';
+  document.getElementById('relatedGrid').innerHTML = list.map(x => renderProductCard(x, true)).join('');
 }
 function swapDetailImage(el){
   const main = document.getElementById('detailMainVisual');
