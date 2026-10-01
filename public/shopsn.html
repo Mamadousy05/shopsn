@@ -368,6 +368,12 @@
     .status-badge{font-size:11px;padding:4px 10px;}
   }
 
+  /* Sur iPhone, une case de saisie en dessous de 16px fait zoomer la page
+     quand on tape dedans, et elle ne se dézoome pas ensuite. */
+  @media (max-width:1024px), (pointer:coarse){
+    input:not([type="file"]):not([type="checkbox"]):not([type="radio"]), select, textarea{font-size:16px !important;}
+  }
+
   /* =========================================================
      RESPONSIVE — petits mobiles (≤480px)
      ========================================================= */
