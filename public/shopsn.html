@@ -87,11 +87,13 @@
   .card-visual{height:175px;display:flex;align-items:center;justify-content:center;font-size:44px;position:relative;overflow:hidden;cursor:pointer;}
   .card-visual img{width:100%;height:100%;object-fit:cover;transition:transform .35s ease;}
   .card:hover .card-visual img{transform:scale(1.06);}
-  .card-visual .stock-flag{position:absolute;top:8px;left:8px;background:rgba(0,0,0,0.55);color:#fff;font-size:10.5px;font-weight:600;padding:3px 8px;border-radius:99px;}
-  .card-visual .cat-tag{position:absolute;top:8px;right:8px;background:rgba(255,255,255,0.9);color:var(--navy);font-size:10px;font-weight:700;padding:3px 9px;border-radius:99px;}
+  .card-visual .stock-flag{position:absolute;bottom:8px;left:8px;background:rgba(0,0,0,0.55);color:#fff;font-size:10.5px;font-weight:600;padding:3px 8px;border-radius:99px;}
+  .card-visual .cat-tag{position:absolute;top:8px;right:8px;max-width:calc(100% - 16px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;background:rgba(255,255,255,0.9);color:var(--navy);font-size:10px;font-weight:700;padding:3px 9px;border-radius:99px;}
   .card-body{padding:12px;display:flex;flex-direction:column;gap:4px;flex:1;}
-  .card-name{font-size:14px;font-weight:600;color:var(--ink);line-height:1.3;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .card-name{font-size:14px;font-weight:600;color:var(--ink);line-height:1.3;cursor:pointer;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:2.6em;}
   .card-add-btn{margin-top:8px;width:100%;display:flex;align-items:center;justify-content:center;gap:7px;padding:8px 14px;font-size:12.5px;}
+  .btn.card-add-btn{background:transparent;color:var(--navy);border:1px solid var(--navy);}
+  .btn.card-add-btn:hover:not(:disabled){background:var(--navy);color:#fff;opacity:1;}
   .card-add-btn svg{width:16px;height:16px;flex-shrink:0;}
   .card-price{font-family:'Fraunces',serif;font-size:17px;font-weight:600;color:var(--navy);margin-top:auto;padding-top:6px;}
   .btn{border:0;border-radius:6px;padding:9px 12px;font-size:13px;font-weight:600;}
@@ -133,6 +135,11 @@
   .detail-price{font-family:'Fraunces',serif;font-size:28px;color:var(--navy);margin-top:12px;}
   .detail-desc{color:var(--ink-soft);margin-top:14px;max-width:460px;line-height:1.7;}
   .detail-stock{font-size:13.5px;margin-top:12px;font-weight:600;}
+  .detail-info{margin-top:22px;border:1px solid var(--line);border-radius:var(--radius-md);background:var(--paper);max-width:460px;}
+  .detail-info div{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;font-size:13px;color:var(--ink-soft);line-height:1.5;}
+  .detail-info div + div{border-top:1px solid var(--line);}
+  .detail-info strong{color:var(--ink);display:block;font-size:13.5px;}
+  .detail-info .ic{font-size:17px;line-height:1.3;flex-shrink:0;}
   .qty-row{display:flex;align-items:center;gap:14px;margin-top:20px;flex-wrap:wrap;}
   .stepper{display:flex;align-items:center;border:1px solid var(--line);border-radius:6px;}
   .stepper button{background:none;border:0;width:34px;height:38px;font-size:16px;color:var(--navy);}
@@ -236,15 +243,6 @@
   .step-card h3{font-size:17px;margin-top:6px;}
   .step-card p{color:var(--ink-soft);font-size:13.5px;margin-top:6px;line-height:1.6;}
 
-  /* ---------- avis clients ---------- */
-  .testi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
-  .testi-card{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius-md);padding:22px;}
-  .testi-stars{color:var(--gold-dark);font-size:14px;letter-spacing:2px;}
-  .testi-text{color:var(--ink);font-size:13.5px;line-height:1.65;margin:12px 0 16px;}
-  .testi-author{display:flex;align-items:center;gap:10px;}
-  .testi-avatar{width:34px;height:34px;border-radius:50%;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;}
-  .testi-name{font-size:13px;font-weight:700;color:var(--ink);}
-  .testi-loc{font-size:11.5px;color:var(--ink-soft);}
 
   /* ---------- checkout stepper ---------- */
   .checkout-stepper{display:flex;align-items:center;gap:0;margin:6px 0 28px;flex-wrap:wrap;}
@@ -272,7 +270,7 @@
      ========================================================= */
   @media (max-width:1024px){
     .grid{grid-template-columns:repeat(3,1fr);}
-    .steps-grid, .testi-grid{grid-template-columns:repeat(2,1fr);}
+    .steps-grid{grid-template-columns:repeat(2,1fr);}
     .admin-shell{grid-template-columns:170px 1fr;gap:20px;}
     .hero-grid{gap:28px;}
     .hero h1{font-size:34px;}
@@ -283,12 +281,13 @@
      ========================================================= */
   @media (max-width:768px){
     .wrap{padding:0 16px;}
-    .steps-grid, .testi-grid{grid-template-columns:1fr;}
+    .steps-grid{grid-template-columns:1fr;}
     .trust-strip{margin:0 -16px;}
     .trust-strip-inner{justify-content:flex-start;gap:12px 20px;padding:14px 16px;}
     .trust-item{font-size:12px;}
     .headbar{padding:12px 16px;gap:12px;}
-    .searchbar{order:3;flex-basis:100%;max-width:none;margin-top:8px;}
+    .searchbar{order:3;flex-basis:100%;max-width:none;margin-top:0;}
+    .logo{flex:1;}
     .head-actions{gap:10px;}
     .head-actions .link-btn{font-size:12px;}
     .hero{padding:32px 0 24px;}
@@ -339,9 +338,10 @@
      ========================================================= */
   @media (max-width:480px){
     .headbar{gap:8px;}
-    .logo{flex-basis:100%;font-size:21px;gap:6px;}
+    .logo{flex:1;font-size:21px;gap:6px;}
     .logo-mark{width:27px;height:27px;font-size:14px;}
-    .head-actions{flex-basis:100%;justify-content:flex-end;gap:8px;}
+    .head-actions{gap:8px;}
+    .icon-btn{width:38px;height:38px;}
     .head-actions .link-btn{font-size:11px;}
     .hero h1{font-size:23px;}
     .hero p.lede{font-size:14px;}
@@ -404,7 +404,7 @@
         <div class="trust-item"><span class="ic">🔒</span>Paiement sécurisé Wave &amp; Orange Money</div>
         <div class="trust-item"><span class="ic">🚚</span>Livraison partout au Sénégal</div>
         <div class="trust-item"><span class="ic">↩️</span>Retours faciles sous 48h</div>
-        <div class="trust-item"><span class="ic">✅</span>Vendeurs locaux vérifiés</div>
+        <div class="trust-item"><span class="ic">📦</span>Commande suivie jusqu'à la livraison</div>
       </div>
     </div>
 
@@ -417,22 +417,22 @@
     </section>
 
     <section class="section">
-      <div class="section-head"><h2>Ce que disent nos clients</h2></div>
-      <div class="testi-grid">
-        <div class="testi-card">
-          <div class="testi-stars">★★★★★</div>
-          <p class="testi-text">Commande reçue en 2 jours à Dakar, très bien emballée. Le paiement avec Wave était instantané.</p>
-          <div class="testi-author"><div class="testi-avatar">FS</div><div><div class="testi-name">Fatou Sarr</div><div class="testi-loc">Dakar</div></div></div>
+      <div class="section-head"><h2>Comment ça marche</h2></div>
+      <div class="steps-grid">
+        <div class="step-card">
+          <div class="step-num">01</div>
+          <h3>Choisissez vos produits</h3>
+          <p>Parcourez les catégories, ajoutez au panier et indiquez votre adresse de livraison.</p>
         </div>
-        <div class="testi-card">
-          <div class="testi-stars">★★★★★</div>
-          <p class="testi-text">Le suivi de commande est clair, je savais exactement où en était ma livraison à chaque étape.</p>
-          <div class="testi-author"><div class="testi-avatar">MN</div><div><div class="testi-name">Moussa Ndiaye</div><div class="testi-loc">Thiès</div></div></div>
+        <div class="step-card">
+          <div class="step-num">02</div>
+          <h3>Payez comme vous voulez</h3>
+          <p>Wave, Orange Money ou en espèces à la livraison. Le vendeur reçoit votre commande sur WhatsApp.</p>
         </div>
-        <div class="testi-card">
-          <div class="testi-stars">★★★★☆</div>
-          <p class="testi-text">Bon choix de produits locaux, prix corrects. J'aimerais voir plus de catégories à l'avenir.</p>
-          <div class="testi-author"><div class="testi-avatar">AD</div><div><div class="testi-name">Aïssatou Diop</div><div class="testi-loc">Mbour</div></div></div>
+        <div class="step-card">
+          <div class="step-num">03</div>
+          <h3>Suivez votre livraison</h3>
+          <p>Dans « Mes commandes », retrouvez chaque étape avec votre numéro de téléphone, jusqu'à la réception.</p>
         </div>
       </div>
     </section>
@@ -442,7 +442,7 @@
 <!-- ===================== DÉTAIL PRODUIT ===================== -->
 <main id="page-detail" class="page">
   <div class="wrap">
-    <div class="page-title-row"><div class="breadcrumb"><a href="#" onclick="showPage('home');return false;">Accueil</a> / Détail du produit</div></div>
+    <div class="page-title-row"><div class="breadcrumb" id="detailBreadcrumb"><a href="#" onclick="showPage('home');return false;">Accueil</a></div></div>
     <div class="detail-grid" id="detailContent"></div>
   </div>
 </main>
@@ -869,7 +869,7 @@ function renderProductCard(p){
       <div class="card-visual ${p.image?'':catClass(p.cat)}">
         ${p.stock <= 5 && p.stock > 0 ? `<span class="stock-flag">Stock limité</span>` : ''}
         ${p.stock===0 ? `<span class="stock-flag">Rupture de stock</span>` : ''}
-        <span class="cat-tag">${esc(catName(p.cat))}</span>
+        ${activeCategory==='all' ? `<span class="cat-tag">${esc(catName(p.cat))}</span>` : ''}
         ${visualContent(p)}
       </div>
       <div class="card-body">
@@ -906,6 +906,7 @@ function renderDetail(){
   const p = products.find(x=>x.id===currentDetailProductId);
   if(!p) return;
   document.title = p.name + ' — SHOPSN';
+  document.getElementById('detailBreadcrumb').innerHTML = `<a href="#" onclick="showPage('home');return false;">Accueil</a> / <a href="#" onclick="setCategory('${esc(p.cat)}');return false;">${esc(catName(p.cat))}</a> / ${esc(p.name)}`;
   const gallery = [p.image, ...(p.images||[])].filter(Boolean);
   document.getElementById('detailContent').innerHTML = `
     <div>
@@ -928,7 +929,12 @@ function renderDetail(){
         </div>
         <button class="btn btn-terracotta" style="padding:12px 22px;" ${p.stock===0?'disabled':''} onclick="addToCart(${p.id}, detailQty)">Ajouter au panier</button>
       </div>
-      <button class="btn btn-outline" style="margin-top:14px;" onclick="shareOnWhatsApp(${p.id})">Partager sur WhatsApp</button>
+      <div class="detail-info">
+        <div><span class="ic">🚚</span><span><strong>Livraison ${formatPrice(DELIVERY_FEE)}</strong>24 à 72h à Dakar, 3 à 7 jours dans les autres régions.</span></div>
+        <div><span class="ic">💳</span><span><strong>Paiement au choix</strong>Wave, Orange Money ou en espèces à la livraison.</span></div>
+        <div><span class="ic">↩️</span><span><strong>Échange ou remboursement</strong>Si l'article ne correspond pas, signalez-le sous 48h après réception.</span></div>
+      </div>
+      <button class="btn btn-outline" style="margin-top:14px;" onclick="shareOnWhatsApp(${p.id})">💬 Partager sur WhatsApp</button>
     </div>
   `;
 }
