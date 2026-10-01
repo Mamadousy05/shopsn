@@ -145,7 +145,20 @@ adresse, et redémarre le serveur.
   destinataire), donc parfois un peu moins fiable qu'une solution payante,
   mais suffisant pour être averti rapidement.
 
-## 6. Limitations actuelles (à savoir)
+## 6. Sécurité et fiabilité
+
+- **Prix vérifiés par le serveur** : le total d'une commande est recalculé à
+  partir du catalogue — un client ne peut pas modifier un prix depuis son
+  navigateur. Le stock disponible est aussi vérifié avant d'accepter la
+  commande.
+- **Annulation = remise en stock** : quand un client annule sa commande, les
+  articles sont automatiquement remis en stock.
+- **Panier conservé** : le panier du client reste enregistré dans son
+  navigateur s'il ferme la page et revient plus tard.
+- **Photos compressées** : les photos de produits sont automatiquement
+  redimensionnées avant l'envoi, pour que le site reste rapide sur mobile.
+
+## 7. Limitations actuelles (à savoir)
 
 - Le mode manuel demande de la rigueur : vérifie toujours le montant exact et
   l'heure du paiement reçu avant de cliquer sur "J'ai reçu le paiement", pour
@@ -154,9 +167,6 @@ adresse, et redémarre le serveur.
 - Le paiement par **carte bancaire** n'est pas branché : il faudrait un
   prestataire supplémentaire (ex. PayDunya, CinetPay) qui agrège plusieurs
   moyens de paiement. Dis-le-moi si tu veux que je l'ajoute.
-- Les produits, catégories et stocks restent gérés en mémoire côté site
-  (comme avant) et ne sont pas encore sauvegardés sur le serveur — seules les
-  commandes et les paiements passent maintenant par le backend.
 - Le stockage des commandes se fait dans un simple fichier
   `data/orders.json`. Cela suffit pour un projet étudiant ; pour une vraie
   boutique en production, il faudrait migrer vers une base de données.

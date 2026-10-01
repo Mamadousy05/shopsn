@@ -46,6 +46,9 @@ app.get('/admin', (req, res) => {
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
   console.log(`✅ Serveur SHOPSN démarré : http://localhost:${PORT}`);
-  const pwd = process.env.ADMIN_PASSWORD || 'admin123 (par défaut — pensez à le changer dans .env)';
-  console.log(`   Espace admin accessible depuis le site (mot de passe : ${pwd})`);
+  if (process.env.ADMIN_PASSWORD) {
+    console.log('   Espace admin : http://localhost:' + PORT + '/admin (mot de passe défini dans .env)');
+  } else {
+    console.warn('   ⚠️  Espace admin protégé par le mot de passe par défaut "admin123" — changez ADMIN_PASSWORD dans .env !');
+  }
 });

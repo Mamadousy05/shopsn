@@ -18,15 +18,19 @@ router.post('/products', requireAdmin, (req, res) => {
   if (!name || !cat || !price || stock === undefined) {
     return res.status(400).json({ error: 'Champs manquants (nom, catégorie, prix, stock).' });
   }
+  if (!(Number(price) > 0) || !(Number(stock) >= 0)) {
+    return res.status(400).json({ error: 'Le prix doit être positif et le stock ne peut pas être négatif.' });
+  }
   const catalog = catalogDb.readCatalog();
   const category = catalog.categories.find(c => c.id === cat);
+  if (!category) return res.status(400).json({ error: 'Catégorie inconnue.' });
   const product = {
     id: catalog.nextProductId++,
     name, cat, price: Number(price), stock: Number(stock),
-    icon: icon || (category ? category.icon : '🏷️'),
+    icon: icon || category.icon,
     image: image || null,
     images: Array.isArray(images) ? images.slice(0, 3) : [],
-    desc: desc || "Nouveau produit ajouté par l'administrateur.",
+    desc: (desc && String(desc).trim()) || "Nouveau produit ajouté par l'administrateur.",
   };
   catalog.products.push(product);
   catalogDb.writeCatalog(catalog);
@@ -39,8 +43,12 @@ router.put('/products/:id', requireAdmin, (req, res) => {
   const product = catalog.products.find(p => p.id === id);
   if (!product) return res.status(404).json({ error: 'Produit introuvable.' });
 
-  const { name, cat, price, stock, image, images } = req.body || {};
+  const { name, cat, price, stock, image, images, desc } = req.body || {};
+  if (price !== undefined && !(Number(price) > 0)) return res.status(400).json({ error: 'Le prix doit être positif.' });
+  if (stock !== undefined && !(Number(stock) >= 0)) return res.status(400).json({ error: 'Le stock ne peut pas être négatif.' });
+  if (cat !== undefined && !catalog.categories.some(c => c.id === cat)) return res.status(400).json({ error: 'Catégorie inconnue.' });
   if (name !== undefined) product.name = name;
+  if (desc !== undefined && String(desc).trim()) product.desc = String(desc).trim();
   if (cat !== undefined) {
     product.cat = cat;
     const category = catalog.categories.find(c => c.id === cat);
@@ -70,7 +78,8 @@ router.post('/categories', requireAdmin, (req, res) => {
   const { name, icon } = req.body || {};
   if (!name) return res.status(400).json({ error: 'Nom de catégorie manquant.' });
   const catalog = catalogDb.readCatalog();
-  const id = name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-');
+  const id = String(name).trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+  if (!id) return res.status(400).json({ error: 'Nom de catégorie invalide.' });
   if (catalog.categories.some(c => c.id === id)) {
     return res.status(400).json({ error: 'Cette catégorie existe déjà.' });
   }

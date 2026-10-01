@@ -13,12 +13,22 @@ const validTokens = new Set();
 router.post('/login', (req, res) => {
   const { password } = req.body || {};
   const expected = process.env.ADMIN_PASSWORD || 'admin123';
-  if (password === expected) {
+  // Comparaison à temps constant (on compare des empreintes de même taille).
+  const hash = (v) => crypto.createHash('sha256').update(String(v || '')).digest();
+  if (crypto.timingSafeEqual(hash(password), hash(expected))) {
     const token = crypto.randomUUID();
     validTokens.add(token);
     return res.json({ ok: true, token });
   }
   res.status(401).json({ ok: false, error: 'Mot de passe incorrect.' });
+});
+
+// Déconnexion : le jeton est invalidé côté serveur, pas seulement oublié
+// par le navigateur.
+router.post('/logout', (req, res) => {
+  const token = req.headers['x-admin-token'];
+  if (token) validTokens.delete(token);
+  res.json({ ok: true });
 });
 
 // Middleware à poser devant toute route réservée à l'admin (gestion des

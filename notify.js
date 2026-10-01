@@ -111,7 +111,7 @@ async function sendWhatsAppOrderNotification(order) {
   const templateName = process.env.WHATSAPP_TEMPLATE_NAME;
 
   if (!token || !phoneNumberId || !sellerNumber) {
-    return { ok: false, error: 'WhatsApp Cloud API non configurée (variables manquantes dans .env).' };
+    return { ok: false, notConfigured: true, error: 'WhatsApp Cloud API non configurée (variables manquantes dans .env).' };
   }
 
   const url = `https://graph.facebook.com/${apiVersion}/${phoneNumberId}/messages`;
