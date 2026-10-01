@@ -44,11 +44,23 @@ app.get('/admin', (req, res) => {
 });
 
 const PORT = process.env.PORT || 4000;
-app.listen(PORT, () => {
+const store = require('./store');
+store.init().then(() => app.listen(PORT, () => {
   console.log(`✅ Serveur SHOPSN démarré : http://localhost:${PORT}`);
   if (process.env.ADMIN_PASSWORD) {
     console.log('   Espace admin : http://localhost:' + PORT + '/admin (mot de passe défini dans .env)');
   } else {
     console.warn('   ⚠️  Espace admin protégé par le mot de passe par défaut "admin123" — changez ADMIN_PASSWORD dans .env !');
   }
+})).catch(err => {
+  // Sans base de données, on préfère ne pas démarrer plutôt que de perdre des
+  // commandes : Render relancera le site automatiquement.
+  console.error('❌ Impossible de se connecter à MongoDB :', err.message);
+  process.exit(1);
+});
+
+// Avant l'arrêt du serveur (mise à jour, redémarrage), on laisse partir les
+// dernières écritures vers MongoDB.
+process.on('SIGTERM', () => {
+  store.flush().finally(() => process.exit(0));
 });

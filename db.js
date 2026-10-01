@@ -1,10 +1,9 @@
-// Stockage très simple des commandes dans un fichier JSON.
-// Suffisant pour un projet étudiant / une petite boutique.
-// Pour un vrai volume de commandes, remplacez ceci par une vraie
-// base de données (PostgreSQL, MongoDB, etc.).
+// Stockage des commandes : dans MongoDB si MONGODB_URI est renseigné
+// (voir store.js), sinon dans le fichier data/orders.json.
 
 const fs = require('fs');
 const path = require('path');
+const store = require('./store');
 
 const DB_FILE = path.join(__dirname, 'data', 'orders.json');
 
@@ -14,6 +13,7 @@ function ensureDataDir() {
 }
 
 function readAll() {
+  if (store.isMongoEnabled()) return store.getList('orders', 'orders.json');
   ensureDataDir();
   if (!fs.existsSync(DB_FILE)) {
     fs.writeFileSync(DB_FILE, '[]', 'utf-8');
@@ -27,6 +27,7 @@ function readAll() {
 }
 
 function writeAll(orders) {
+  if (store.isMongoEnabled()) return store.saveList('orders', 'orders.json', orders);
   ensureDataDir();
   fs.writeFileSync(DB_FILE, JSON.stringify(orders, null, 2), 'utf-8');
 }

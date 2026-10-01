@@ -2,8 +2,11 @@
 // comme pour les commandes. Ça permet aux produits ajoutés par l'admin
 // de survivre à un redémarrage du serveur.
 
+// Avec MONGODB_URI (voir store.js), le catalogue est conservé dans MongoDB.
+
 const fs = require('fs');
 const path = require('path');
+const store = require('./store');
 
 const DB_FILE = path.join(__dirname, 'data', 'catalog.json');
 
@@ -42,6 +45,21 @@ const SEED = {
 };
 
 function readCatalog() {
+  if (store.isMongoEnabled()) {
+    const categories = store.getMeta('categories');
+    if (!categories) {
+      // Base encore vide : on part du catalogue local s'il existe, sinon des
+      // produits d'exemple, et on l'enregistre dans MongoDB.
+      const start = store.readJsonFile('catalog.json', null) || SEED;
+      writeCatalog(start);
+      return JSON.parse(JSON.stringify(start));
+    }
+    return {
+      categories: JSON.parse(JSON.stringify(categories)),
+      products: store.getList('products', 'catalog.json'),
+      nextProductId: store.getMeta('nextProductId'),
+    };
+  }
   ensureDataDir();
   if (!fs.existsSync(DB_FILE)) {
     fs.writeFileSync(DB_FILE, JSON.stringify(SEED, null, 2), 'utf-8');
@@ -54,6 +72,12 @@ function readCatalog() {
 }
 
 function writeCatalog(catalog) {
+  if (store.isMongoEnabled()) {
+    store.saveList('products', 'catalog.json', catalog.products);
+    store.setMeta('nextProductId', catalog.nextProductId);
+    store.setMeta('categories', catalog.categories);
+    return;
+  }
   ensureDataDir();
   fs.writeFileSync(DB_FILE, JSON.stringify(catalog, null, 2), 'utf-8');
 }
